@@ -2,18 +2,28 @@
 
 import React from "react";
 import { MatchType } from "@/types/tournament";
-import { Trophy, Clock, PlayCircle, CheckCircle2, ChevronRight } from "lucide-react";
+import {
+  Trophy,
+  Clock,
+  PlayCircle,
+  CheckCircle2,
+  ChevronRight,
+  MessageCircle,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getRoundDisplayName } from "@/lib/tournament-engine";
+import { generateMatchWhatsAppNotification } from "@/lib/olinda";
 
 interface MatchCardProps {
   match: MatchType;
+  tournamentTitle?: string;
   onOpenScoreboard?: (match: MatchType) => void;
   compact?: boolean;
 }
 
 export const MatchCard: React.FC<MatchCardProps> = ({
   match,
+  tournamentTitle = "Campeonato de Futmesa",
   onOpenScoreboard,
   compact = false,
 }) => {
@@ -29,13 +39,24 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       : match.participant2.name
     : "A definir";
 
-  const isP1Winner = match.winnerId && match.participant1 && match.winnerId === match.participant1.id;
-  const isP2Winner = match.winnerId && match.participant2 && match.winnerId === match.participant2.id;
+  const p1Neighborhood = match.participant1?.neighborhood
+    ? ` (${match.participant1.neighborhood})`
+    : "";
+  const p2Neighborhood = match.participant2?.neighborhood
+    ? ` (${match.participant2.neighborhood})`
+    : "";
+
+  const isP1Winner =
+    match.winnerId && match.participant1 && match.winnerId === match.participant1.id;
+  const isP2Winner =
+    match.winnerId && match.participant2 && match.winnerId === match.participant2.id;
   const isLive = match.status === "AO_VIVO" || match.status === "IN_PROGRESS";
   const isFinished = match.status === "FINALIZADA" || match.status === "FINISHED";
   const isBye = match.status === "BYE";
 
-  const roundDisplay = match.roundName || (match.stage ? getRoundDisplayName(match.stage) : `Rodada ${match.round}`);
+  const roundDisplay =
+    match.roundName ||
+    (match.stage ? getRoundDisplayName(match.stage) : `Rodada ${match.round}`);
 
   return (
     <div
@@ -100,8 +121,16 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         >
           <div className="flex items-center gap-2 truncate pr-2">
             {isP1Winner && <Trophy className="h-3.5 w-3.5 text-amber-400 shrink-0" />}
-            <span className={cn("truncate text-sm", isP1Winner ? "text-amber-300 font-bold" : "text-slate-200")}>
+            <span
+              className={cn(
+                "truncate text-sm",
+                isP1Winner ? "text-amber-300 font-bold" : "text-slate-200"
+              )}
+            >
               {p1Name}
+              <span className="text-[11px] font-normal text-emerald-200/50">
+                {p1Neighborhood}
+              </span>
             </span>
           </div>
 
@@ -138,8 +167,16 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         >
           <div className="flex items-center gap-2 truncate pr-2">
             {isP2Winner && <Trophy className="h-3.5 w-3.5 text-amber-400 shrink-0" />}
-            <span className={cn("truncate text-sm", isP2Winner ? "text-amber-300 font-bold" : "text-slate-200")}>
+            <span
+              className={cn(
+                "truncate text-sm",
+                isP2Winner ? "text-amber-300 font-bold" : "text-slate-200"
+              )}
+            >
               {p2Name}
+              <span className="text-[11px] font-normal text-emerald-200/50">
+                {p2Neighborhood}
+              </span>
             </span>
           </div>
 
@@ -166,17 +203,63 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         </div>
       </div>
 
-      {/* Action Button: Open Live Scoreboard */}
-      {onOpenScoreboard && !isBye && (
-        <div className="mt-3 pt-2.5 border-t border-collegiate-border/60 flex items-center justify-end">
-          <button
-            onClick={() => onOpenScoreboard(match)}
-            className="flex items-center gap-1 text-xs font-bold text-amber-300 hover:text-white bg-amber-950/40 hover:bg-amber-900/50 border border-amber-500/40 rounded-lg px-2.5 py-1 transition-all"
-          >
-            <PlayCircle className="h-3.5 w-3.5 text-amber-400" />
-            <span>{isFinished ? "Ver/Editar Placar" : "Abrir Placar da Mesa"}</span>
-            <ChevronRight className="h-3 w-3" />
-          </button>
+      {/* Action Buttons: Summon WhatsApp & Scoreboard */}
+      {!isBye && (
+        <div className="mt-3 pt-2.5 border-t border-collegiate-border/60 flex flex-wrap items-center justify-between gap-2">
+          {/* Quick WhatsApp alerts for players */}
+          {!isFinished && (
+            <div className="flex items-center gap-1">
+              {match.participant1 && (
+                <a
+                  href={generateMatchWhatsAppNotification({
+                    phone: match.participant1.phone,
+                    athleteName: p1Name,
+                    tournamentTitle,
+                    court: match.court,
+                    opponentName: p2Name,
+                  })}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 rounded bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-500/40 px-2 py-0.5 text-[11px] font-semibold text-emerald-300 transition-colors"
+                  title={`Avisar ${p1Name} no WhatsApp`}
+                >
+                  <MessageCircle className="h-3 w-3" />
+                  <span>Avisar P1</span>
+                </a>
+              )}
+
+              {match.participant2 && (
+                <a
+                  href={generateMatchWhatsAppNotification({
+                    phone: match.participant2.phone,
+                    athleteName: p2Name,
+                    tournamentTitle,
+                    court: match.court,
+                    opponentName: p1Name,
+                  })}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 rounded bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-500/40 px-2 py-0.5 text-[11px] font-semibold text-emerald-300 transition-colors"
+                  title={`Avisar ${p2Name} no WhatsApp`}
+                >
+                  <MessageCircle className="h-3 w-3" />
+                  <span>Avisar P2</span>
+                </a>
+              )}
+            </div>
+          )}
+
+          {/* Placar button */}
+          {onOpenScoreboard && (
+            <button
+              onClick={() => onOpenScoreboard(match)}
+              className="ml-auto flex items-center gap-1 text-xs font-bold text-amber-300 hover:text-white bg-amber-950/40 hover:bg-amber-900/50 border border-amber-500/40 rounded-lg px-2.5 py-1 transition-all"
+            >
+              <PlayCircle className="h-3.5 w-3.5 text-amber-400" />
+              <span>{isFinished ? "Ver/Editar Placar" : "Placar da Mesa"}</span>
+              <ChevronRight className="h-3 w-3" />
+            </button>
+          )}
         </div>
       )}
     </div>

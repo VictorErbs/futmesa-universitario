@@ -28,10 +28,17 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const participants = tournament.participants;
+    // Only draw confirmed & verified participants
+    const participants = tournament.participants.filter(
+      (p) => p.status === "CONFIRMED"
+    );
+
     if (participants.length < 2) {
       return NextResponse.json(
-        { error: "São necessários pelo menos 2 participantes para realizar o sorteio." },
+        {
+          error:
+            "São necessários pelo menos 2 participantes com inscrição confirmada e WhatsApp validado para realizar o sorteio.",
+        },
         { status: 400 }
       );
     }

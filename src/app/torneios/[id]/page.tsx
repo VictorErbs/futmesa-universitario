@@ -17,14 +17,19 @@ import {
   Layers,
   Info,
   MessageCircle,
+  Share2,
+  Store,
+  FileText,
+  Search,
 } from "lucide-react";
 import { TournamentType, MatchType } from "@/types/tournament";
 import { BracketTree } from "@/components/tournament/BracketTree";
 import { GroupTable } from "@/components/tournament/GroupTable";
 import { MatchCard } from "@/components/tournament/MatchCard";
 import { LiveScoreboardModal } from "@/components/tournament/LiveScoreboardModal";
-import { formatDateTime } from "@/lib/utils";
-import { cn } from "@/lib/utils";
+import { SocialCardModal } from "@/components/tournament/SocialCardModal";
+import { formatDateTime, cn, copyToClipboard } from "@/lib/utils";
+import { BAIRROS_OLINDA } from "@/lib/olinda";
 
 type TabKey = "overview" | "bracket" | "groups" | "matches" | "participants";
 
@@ -43,10 +48,15 @@ export default function TournamentHubPage({
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawSuccess, setDrawSuccess] = useState<string | null>(null);
 
-  // Scoreboard modal state
+  // Scoreboard & Social card modal state
   const [selectedMatch, setSelectedMatch] = useState<MatchType | null>(null);
   const [isScoreboardOpen, setIsScoreboardOpen] = useState(false);
+  const [isSocialCardOpen, setIsSocialCardOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+
+  // Filter for participants
+  const [participantSearch, setParticipantSearch] = useState("");
+  const [selectedBairroFilter, setSelectedBairroFilter] = useState("TODOS");
 
   const fetchTournamentData = async () => {
     try {
@@ -96,9 +106,9 @@ export default function TournamentHubPage({
     }
   };
 
-  const handleCopyRegistrationLink = () => {
+  const handleCopyRegistrationLink = async () => {
     const url = `${window.location.origin}/torneios/${tournamentId}/inscricao`;
-    navigator.clipboard.writeText(url);
+    await copyToClipboard(url);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2500);
   };
@@ -106,7 +116,7 @@ export default function TournamentHubPage({
   const handleShareWhatsApp = () => {
     const url = `${window.location.origin}/torneios/${tournamentId}/inscricao`;
     const text = encodeURIComponent(
-      `🏆 Inscrições abertas para o *${tournament?.title}* de Futmesa! Garanta sua vaga pelo link:\n${url}`
+      `*Inscricoes abertas para o ${tournament?.title} de Futmesa em Olinda/PE!*\nGaranta sua vaga pelo link:\n${url}`
     );
     window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
   };
@@ -120,9 +130,9 @@ export default function TournamentHubPage({
     return (
       <div className="flex min-h-[65vh] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent"></div>
-          <span className="text-sm font-semibold text-slate-400">
-            Carregando painel do torneio...
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-amber-500 border-t-transparent"></div>
+          <span className="text-sm font-semibold text-emerald-100/70">
+            Carregando painel do torneio comunitário...
           </span>
         </div>
       </div>
@@ -158,30 +168,53 @@ export default function TournamentHubPage({
   const maxSetsCount = tournament.maxSets || (tournament.setsToWin === 1 ? 1 : 3);
   const setsToWinCount = tournament.setsToWin || Math.ceil(maxSetsCount / 2);
 
+  // Filtered participants list
+  const filteredParticipants = (tournament.participants || []).filter((p) => {
+    const matchesQuery =
+      participantSearch === "" ||
+      p.name.toLowerCase().includes(participantSearch.toLowerCase()) ||
+      (p.nickname && p.nickname.toLowerCase().includes(participantSearch.toLowerCase())) ||
+      (p.partnerName && p.partnerName.toLowerCase().includes(participantSearch.toLowerCase())) ||
+      (p.partnerNickname && p.partnerNickname.toLowerCase().includes(participantSearch.toLowerCase())) ||
+      (p.communityOrProject && p.communityOrProject.toLowerCase().includes(participantSearch.toLowerCase()));
+
+    const matchesBairro =
+      selectedBairroFilter === "TODOS" || p.neighborhood === selectedBairroFilter;
+
+    return matchesQuery && matchesBairro;
+  });
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
       {/* Top Breadcrumb & Action Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-400 hover:text-emerald-400 transition-colors"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-emerald-200/70 hover:text-amber-400 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Voltar para todos os torneios</span>
+          <span>Voltar para todos os campeonatos</span>
         </Link>
 
-        {/* Quick public registration CTA */}
-        <div className="flex items-center gap-2">
+        {/* Quick public registration & social buttons */}
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setIsSocialCardOpen(true)}
+            className="flex items-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-950/40 px-3 py-1.5 text-xs font-bold text-amber-300 hover:bg-amber-900/60 transition-colors shadow-sm"
+          >
+            <Share2 className="h-3.5 w-3.5" />
+            <span>Card Stories / Status</span>
+          </button>
           <button
             onClick={handleCopyRegistrationLink}
-            className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-800 transition-colors"
+            className="flex items-center gap-1.5 rounded-lg border border-collegiate-border bg-collegiate-surface px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-collegiate-surfaceHover transition-colors"
           >
-            <Copy className="h-3.5 w-3.5 text-emerald-400" />
-            <span>{copiedLink ? "Link Copiado!" : "Copiar Link de Inscrição"}</span>
+            <Copy className="h-3.5 w-3.5 text-amber-400" />
+            <span>{copiedLink ? "Link Copiado!" : "Copiar Inscrição"}</span>
           </button>
           <button
             onClick={handleShareWhatsApp}
-            className="flex items-center gap-1.5 rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-600 transition-colors shadow"
+            className="flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors shadow"
           >
             <MessageCircle className="h-3.5 w-3.5" />
             <span>WhatsApp</span>
@@ -203,6 +236,11 @@ export default function TournamentHubPage({
               <span className="rounded-md bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 text-xs font-semibold text-amber-400">
                 Sets até {tournament.pointsPerSet} pts (Melhor de {maxSetsCount})
               </span>
+              {tournament.community && (
+                <span className="rounded-md bg-emerald-950/60 border border-emerald-500/30 px-2.5 py-0.5 text-xs font-bold text-emerald-300">
+                  📍 {tournament.community}
+                </span>
+              )}
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
@@ -210,7 +248,7 @@ export default function TournamentHubPage({
             </h1>
 
             {tournament.description && (
-              <p className="text-sm text-emerald-100/70 leading-relaxed font-normal">
+              <p className="text-sm text-emerald-100/80 leading-relaxed font-normal">
                 {tournament.description}
               </p>
             )}
@@ -258,7 +296,7 @@ export default function TournamentHubPage({
               className="flex items-center justify-center gap-2 rounded-2xl border border-emerald-500/40 bg-emerald-950/40 px-6 py-3 text-sm font-bold text-emerald-300 hover:bg-emerald-900/60 transition-all text-center"
             >
               <Users className="h-4 w-4" />
-              <span>Página de Inscrição Pública</span>
+              <span>Inscrição Pública (WhatsApp)</span>
             </Link>
           </div>
         </div>
@@ -325,7 +363,7 @@ export default function TournamentHubPage({
             )}
           >
             <Flame className="h-4 w-4" />
-            <span>Partidas & Placar ({matchesCount})</span>
+            <span>Partidas & Mesas ({matchesCount})</span>
           </button>
 
           <button
@@ -386,14 +424,30 @@ export default function TournamentHubPage({
               </div>
             </div>
 
+            {/* Apoiadores / Patrocinadores Locais de Olinda */}
+            {tournament.sponsors && (
+              <div className="rounded-2xl border border-amber-500/30 bg-collegiate-surface/90 p-6 space-y-3 shadow-md">
+                <h3 className="text-base font-black text-amber-300 flex items-center gap-2">
+                  <Store className="h-5 w-5 text-amber-400" />
+                  <span>Apoiadores & Comércio Local de Olinda</span>
+                </h3>
+                <p className="text-sm text-emerald-100/90 leading-relaxed font-medium">
+                  {tournament.sponsors}
+                </p>
+              </div>
+            )}
+
             {/* Rules Summary */}
             <div className="rounded-2xl border border-collegiate-border bg-collegiate-surface/90 p-6 space-y-3 shadow-md">
-              <h3 className="text-base font-black text-amber-300">Regras Oficiais do Futmesa Aplicadas</h3>
+              <h3 className="text-base font-black text-amber-300">Regras Oficiais do Futmesa em Olinda</h3>
               <ul className="space-y-2 text-xs sm:text-sm text-emerald-100/80 list-disc list-inside">
                 <li>Máximo de 3 toques por equipe antes de devolver a bola para o campo adversário.</li>
                 <li>Proibido encostar qualquer parte do corpo ou mãos na mesa durante a jogada.</li>
                 <li>Saque alternado cruzado a cada 2 pontos com bola lançada com os pés.</li>
                 <li>Em caso de empate em {tournament.pointsPerSet - 1}x{tournament.pointsPerSet - 1}, o jogo segue até que um lado abra 2 pontos de vantagem.</li>
+                {tournament.rulesNote && (
+                  <li className="text-amber-300 font-semibold">{tournament.rulesNote}</li>
+                )}
               </ul>
             </div>
           </div>
@@ -424,6 +478,14 @@ export default function TournamentHubPage({
                 >
                   <MessageCircle className="h-4 w-4" />
                   <span>Enviar no WhatsApp</span>
+                </button>
+
+                <button
+                  onClick={() => setIsSocialCardOpen(true)}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl border border-amber-500/50 bg-amber-950/30 py-2.5 text-xs sm:text-sm font-bold text-amber-300 hover:bg-amber-900/40 transition-all"
+                >
+                  <Share2 className="h-4 w-4" />
+                  <span>Gerar Card de Stories</span>
                 </button>
               </div>
             </div>
@@ -503,11 +565,11 @@ export default function TournamentHubPage({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h3 className="text-lg font-black text-white flex items-center gap-2">
-                <PlayCircle className="h-5 w-5 text-emerald-400" />
-                <span>Lista de Partidas & Placar da Mesa</span>
+                <PlayCircle className="h-5 w-5 text-amber-400" />
+                <span>Partidas, Mesas & Convocação WhatsApp</span>
               </h3>
-              <p className="text-xs text-slate-400">
-                Selecione qualquer partida para abrir o Placar Digital ao Vivo dos árbitros
+              <p className="text-xs text-emerald-100/70">
+                Use os botões de aviso no WhatsApp para chamar os atletas para a mesa ou abra o Placar da Mesa
               </p>
             </div>
           </div>
@@ -518,6 +580,7 @@ export default function TournamentHubPage({
                 <MatchCard
                   key={match.id}
                   match={match}
+                  tournamentTitle={tournament.title}
                   onOpenScoreboard={handleOpenScoreboard}
                 />
               ))}
@@ -535,69 +598,149 @@ export default function TournamentHubPage({
       {/* Tab Content 5: Participants */}
       {activeTab === "participants" && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h3 className="text-lg font-black text-white flex items-center gap-2">
-              <Users className="h-5 w-5 text-emerald-400" />
+              <Users className="h-5 w-5 text-amber-400" />
               <span>Atletas e Duplas Inscritos ({participantsCount})</span>
             </h3>
 
             <Link
               href={`/torneios/${tournamentId}/inscricao`}
-              className="rounded-lg bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-emerald-500 transition-colors"
+              className="rounded-lg bg-amber-500 hover:bg-amber-400 px-3.5 py-1.5 text-xs font-bold text-slate-950 transition-colors shadow"
             >
               + Nova Inscrição
             </Link>
           </div>
 
-          {tournament.participants && tournament.participants.length > 0 ? (
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 overflow-hidden shadow-lg">
+          {/* Filter and Search Bar */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-200/50" />
+              <input
+                type="text"
+                placeholder="Buscar por atleta, apelido, parceiro ou arena..."
+                value={participantSearch}
+                onChange={(e) => setParticipantSearch(e.target.value)}
+                className="w-full rounded-xl border border-collegiate-border bg-collegiate-surface pl-9 pr-4 py-2 text-xs text-white placeholder-emerald-100/40 focus:border-amber-400 focus:outline-none"
+              />
+            </div>
+
+            <select
+              value={selectedBairroFilter}
+              onChange={(e) => setSelectedBairroFilter(e.target.value)}
+              className="rounded-xl border border-collegiate-border bg-collegiate-surface px-3 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
+            >
+              <option value="TODOS">Todos os Bairros de Olinda</option>
+              {BAIRROS_OLINDA.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {filteredParticipants.length > 0 ? (
+            <div className="rounded-2xl border border-collegiate-border bg-collegiate-surface/90 overflow-hidden shadow-lg">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs sm:text-sm">
-                  <thead className="border-b border-slate-800 bg-slate-950/60 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  <thead className="border-b border-collegiate-border bg-collegiate-dark/80 text-[11px] font-bold uppercase tracking-wider text-amber-300">
                     <tr>
-                      <th className="py-3 px-4 w-12 text-center">#</th>
-                      <th className="py-3 px-4">Nome do Jogador / Dupla</th>
-                      <th className="py-3 px-4">Parceiro</th>
-                      <th className="py-3 px-4">Contato</th>
+                      <th className="py-3 px-4 w-10 text-center">#</th>
+                      <th className="py-3 px-4">Atleta 1 / Apelido</th>
+                      <th className="py-3 px-4">Atleta 2 / Parceiro</th>
+                      <th className="py-3 px-4">Bairro / Arena</th>
                       <th className="py-3 px-4 text-center">Status</th>
+                      <th className="py-3 px-4 text-center">Ações</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60">
-                    {tournament.participants.map((p, idx) => (
-                      <tr key={p.id} className="hover:bg-slate-800/40 transition-colors">
-                        <td className="py-3 px-4 text-center font-mono text-slate-500">
-                          {idx + 1}
-                        </td>
-                        <td className="py-3 px-4 font-semibold text-slate-200">
-                          {p.name}
-                        </td>
-                        <td className="py-3 px-4 text-slate-400">
-                          {p.partnerName || "-"}
-                        </td>
-                        <td className="py-3 px-4 text-slate-400 font-mono text-xs">
-                          {p.phone || p.email || "-"}
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <span className="inline-flex items-center rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-400 border border-emerald-500/30">
-                            Confirmado
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                  <tbody className="divide-y divide-collegiate-border/60">
+                    {filteredParticipants.map((p, idx) => {
+                      const isConfirmed = p.status === "CONFIRMED" || p.phoneVerified;
+                      return (
+                        <tr key={p.id} className="hover:bg-collegiate-dark/40 transition-colors">
+                          <td className="py-3 px-4 text-center font-mono text-emerald-200/50">
+                            {idx + 1}
+                          </td>
+                          <td className="py-3 px-4 font-semibold text-white">
+                            <div>
+                              {p.name}
+                              {p.nickname && (
+                                <span className="text-amber-400 font-bold ml-1.5 text-xs">
+                                  "{p.nickname}"
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-emerald-100/80">
+                            {p.partnerName ? (
+                              <div>
+                                {p.partnerName}
+                                {p.partnerNickname && (
+                                  <span className="text-amber-400 font-semibold ml-1 text-xs">
+                                    "{p.partnerNickname}"
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-emerald-200/40">-</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 text-emerald-200/70 text-xs">
+                            <span className="font-semibold text-amber-300/90">
+                              {p.neighborhood || "Olinda"}
+                            </span>
+                            {p.communityOrProject && (
+                              <div className="text-[11px] text-emerald-100/50">
+                                {p.communityOrProject}
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            {isConfirmed ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 px-2.5 py-0.5 text-[10px] font-bold text-emerald-300">
+                                <CheckCircle2 className="h-3 w-3" />
+                                <span>Verificado</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/40 px-2.5 py-0.5 text-[10px] font-bold text-amber-300">
+                                <span>Pendente OTP</span>
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            {p.phone ? (
+                              <a
+                                href={`https://wa.me/55${p.phone.replace(/\D/g, "")}?text=${encodeURIComponent(
+                                  `Salve ${p.nickname || p.name}! Confirmamos sua vaga no ${tournament.title} de Futmesa!`
+                                )}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 rounded bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/40 px-2.5 py-1 text-[11px] font-bold text-emerald-300 transition-colors"
+                              >
+                                <MessageCircle className="h-3 w-3" />
+                                <span>WhatsApp</span>
+                              </a>
+                            ) : (
+                              <span className="text-[10px] text-emerald-200/40">-</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
             </div>
           ) : (
-            <div className="rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 p-12 text-center space-y-3">
-              <p className="text-sm text-slate-500">
-                Nenhum participante inscrito ainda.
+            <div className="rounded-2xl border border-dashed border-collegiate-border bg-collegiate-surface/40 p-12 text-center space-y-3">
+              <p className="text-sm text-emerald-100/60">
+                Nenhum participante encontrado para o filtro selecionado.
               </p>
               <Link
                 href={`/torneios/${tournamentId}/inscricao`}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-500"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-slate-950 hover:bg-amber-400"
               >
-                <span>Inscrever Primeiro Participante</span>
+                <span>Inscrever Novo Atleta</span>
               </Link>
             </div>
           )}
@@ -618,6 +761,13 @@ export default function TournamentHubPage({
           onMatchUpdated={fetchTournamentData}
         />
       )}
+
+      {/* Social Card Modal */}
+      <SocialCardModal
+        tournament={tournament}
+        isOpen={isSocialCardOpen}
+        onClose={() => setIsSocialCardOpen(false)}
+      />
     </div>
   );
 }

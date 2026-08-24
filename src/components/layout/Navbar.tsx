@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Trophy, PlusCircle, BookOpen, Menu, X, ShieldCheck } from "lucide-react";
+import { Trophy, PlusCircle, BookOpen, Menu, X, MapPin } from "lucide-react";
 
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -17,19 +17,19 @@ export const Navbar = () => {
           </div>
           <div className="flex flex-col">
             <span className="text-lg font-black tracking-tight text-white group-hover:text-amber-400 transition-colors">
-              FUTMESA <span className="text-amber-400">UNIVERSITÁRIO</span>
+              FUTMESA <span className="text-amber-400">OLINDA</span>
             </span>
-            <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-300/70">
-              Liga Acadêmica &bull; Extensão
+            <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-300/80">
+              Circuito Comunitário &bull; PE
             </span>
           </div>
         </Link>
 
-        {/* Extension Badge & Main Nav Links */}
+        {/* Olinda Badge & Main Nav Links */}
         <div className="hidden md:flex items-center gap-6">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-950/40 px-3.5 py-1 text-xs font-semibold text-amber-300">
-            <ShieldCheck className="h-3.5 w-3.5 text-amber-400" />
-            <span>Projeto de Extensão Universitária</span>
+            <MapPin className="h-3.5 w-3.5 text-amber-400" />
+            <span>Comunidades & Praças de Olinda/PE</span>
           </div>
 
           <nav className="flex items-center gap-5 text-sm font-semibold text-slate-200">
@@ -37,14 +37,14 @@ export const Navbar = () => {
               href="/"
               className="hover:text-amber-400 transition-colors"
             >
-              Torneios
+              Campeonatos
             </Link>
             <Link
               href="/torneios/novo"
               className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-md shadow-emerald-700/30 hover:bg-emerald-500 active:scale-95 transition-all border border-emerald-500"
             >
               <PlusCircle className="h-4 w-4" />
-              <span>Criar Torneio</span>
+              <span>Criar Campeonato</span>
             </Link>
           </nav>
         </div>
@@ -72,8 +72,8 @@ export const Navbar = () => {
       {mobileMenuOpen && (
         <div className="md:hidden border-b border-slate-800 bg-slate-900/95 px-4 py-4 space-y-3">
           <div className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-950/40 px-3 py-1.5 text-xs font-medium text-emerald-300">
-            <ShieldCheck className="h-3.5 w-3.5" />
-            <span>Projeto de Extensão Comunitário</span>
+            <MapPin className="h-3.5 w-3.5 text-amber-400" />
+            <span>Circuito Comunitário Olinda/PE</span>
           </div>
           <div className="flex flex-col gap-2 pt-2">
             <Link
@@ -81,14 +81,14 @@ export const Navbar = () => {
               onClick={() => setMobileMenuOpen(false)}
               className="rounded-lg px-3 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800 hover:text-emerald-400"
             >
-              🏆 Todos os Torneios
+              🏆 Todos os Campeonatos
             </Link>
             <Link
               href="/torneios/novo"
               onClick={() => setMobileMenuOpen(false)}
               className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white text-center shadow hover:bg-emerald-500"
             >
-              + Criar Novo Torneio
+              + Criar Novo Campeonato
             </Link>
           </div>
         </div>

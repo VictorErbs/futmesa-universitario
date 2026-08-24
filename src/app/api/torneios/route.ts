@@ -40,6 +40,9 @@ export async function POST(req: NextRequest) {
       setsToWin,
       advantageRule = true,
       location,
+      community,
+      sponsors,
+      rulesNote,
       startDate,
     } = body;
 
@@ -70,7 +73,10 @@ export async function POST(req: NextRequest) {
         pointsPerSet: Number(pointsPerSet) || 18,
         setsToWin: calculatedSetsToWin,
         advantageRule: Boolean(advantageRule),
-        location: location?.trim() || "Quadra Universitária de Futmesa",
+        location: location?.trim() || "Mesa Comunitária de Futmesa (Olinda/PE)",
+        community: community?.trim() || null,
+        sponsors: sponsors?.trim() || null,
+        rulesNote: rulesNote?.trim() || null,
         startDate: startDate ? new Date(startDate) : new Date(),
         status: "REGISTRATION",
       },
