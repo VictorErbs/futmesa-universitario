@@ -38,7 +38,6 @@ Plataforma livre e de código aberto criada para fomentar a integração, o espo
 - **RN01:** Um torneio não pode iniciar a geração de chaves caso não existam no mínimo 2 participantes.
 - **RN02:** Em casos de empate no *match point* (ex: 20x20), vence quem abrir 2 pontos de vantagem, respeitando a configuração de `advantageRule` do torneio.
 - **RN03:** Atletas que não confirmarem presença até o momento do sorteio devem ser ignorados no chaveamento ativo.
-- **RN04:** Durante o chaveamento "Mata-Mata", o perdedor da semifinal deve automaticamente ser alocado para a disputa de "Terceiro Lugar".
 
 ## 🗄️ Banco de Dados e Arquitetura
 
