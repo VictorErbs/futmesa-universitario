@@ -10,6 +10,7 @@
     "test": "vitest run",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
+    "prisma:reset": "prisma db push --force-reset && npm run prisma:seed",
     "prisma:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
