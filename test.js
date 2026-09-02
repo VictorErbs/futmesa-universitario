@@ -1,0 +1,1 @@
+const { PrismaClient } = require('@prisma/client'); const prisma = new PrismaClient(); async function test() { const ts = await prisma.tournament.findMany({ include: { matches: true } }); for (const t of ts) { console.log(t.name, t.matches.filter(m => m.nextMatchId).length, 'matches have nextMatchId'); } } test().catch(console.error).finally(() => prisma.());

@@ -18,6 +18,9 @@ model Tournament {
   pointsPerSet  Int               @default(18)                   // 18 pontos padrão do MesaMatch
   advantageRule Boolean           @default(true)                 // Diferença de 2 pontos
   location      String?
+  community     String?           // Bairro ou comunidade de Olinda (ex: Rio Doce, Peixinhos, Alto da Sé)
+  sponsors      String?           // Apoiadores e comércios locais
+  rulesNote     String?           // Observações de regras locais
   startDate     DateTime?
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
@@ -27,20 +30,32 @@ model Tournament {
 }
 
 model Participant {
-  id           String          @id @default(uuid())
-  tournamentId String
-  tournament   Tournament      @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  name         String
-  partnerName  String?         // para duplas 2x2
-  phone        String?
-  email        String?
-  seed         Int?
-  status       String          @default("CONFIRMED") // 'CONFIRMED', 'PENDING', 'ELIMINATED'
-  groupName    String?
-  createdAt    DateTime        @default(now())
-  matchesAsP1  Match[]         @relation("Participant1")
-  matchesAsP2  Match[]         @relation("Participant2")
-  matchesWon   Match[]         @relation("Winner")
+  id                 String          @id @default(uuid())
+  tournamentId       String
+  tournament         Tournament      @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  name               String
+  nickname           String?         // Vulgo / Apelido no bairro (ex: Dadá, Juninho)
+  partnerName        String?         // para duplas 2x2
+  partnerNickname    String?         // Apelido do parceiro
+  neighborhood       String?         // Bairro de Olinda (ex: Rio Doce, Peixinhos, Bultrins)
+  communityOrProject String?         // Equipe, Arena ou Projeto Social
+  phone              String?
+  email              String?
+  seed               Int?
+  status             String          @default("PENDING") // 'CONFIRMED', 'PENDING', 'ELIMINATED'
+  phoneVerified      Boolean         @default(false)
+  verificationCode   String?
+  codeExpiresAt      DateTime?
+  groupName          String?
+  createdAt          DateTime        @default(now())
+  matchesAsP1        Match[]         @relation("Participant1")
+  matchesAsP2        Match[]         @relation("Participant2")
+  matchesWon         Match[]         @relation("Winner")
+
+  @@index([tournamentId])
+  @@index([status])
+  @@index([neighborhood])
+  @@index([phoneVerified])
 }
 
 model TournamentGroup {
@@ -49,6 +64,8 @@ model TournamentGroup {
   tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   name         String     // 'Grupo A', 'Grupo B'
   createdAt    DateTime   @default(now())
+
+  @@index([tournamentId])
 }
 
 model Match {
@@ -71,6 +88,12 @@ model Match {
   court          String?
   sets           MatchSet[]
   createdAt      DateTime     @default(now())
+
+  @@index([tournamentId])
+  @@index([stage])
+  @@index([status])
+  @@index([participant1Id])
+  @@index([participant2Id])
 }
 
 model MatchSet {
@@ -82,4 +105,7 @@ model MatchSet {
   score2     Int      @default(0)
   isFinished Boolean  @default(false)
   createdAt  DateTime @default(now())
+
+  @@index([matchId])
 }
+

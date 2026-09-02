@@ -17,6 +17,10 @@ import {
   Layers,
   Info,
   MessageCircle,
+  Share2,
+  Store,
+  FileText,
+  Search,
 } from "lucide-react";
 import { TournamentType, MatchType } from "@/types/tournament";
 import { LiveScoreboardModal } from "@/components/tournament/LiveScoreboardModal";
@@ -45,10 +49,15 @@ export default function TournamentHubPage({
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawSuccess, setDrawSuccess] = useState<string | null>(null);
 
-  // Scoreboard modal state
+  // Scoreboard & Social card modal state
   const [selectedMatch, setSelectedMatch] = useState<MatchType | null>(null);
   const [isScoreboardOpen, setIsScoreboardOpen] = useState(false);
+  const [isSocialCardOpen, setIsSocialCardOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+
+  // Filter for participants
+  const [participantSearch, setParticipantSearch] = useState("");
+  const [selectedBairroFilter, setSelectedBairroFilter] = useState("TODOS");
 
   const fetchTournamentData = async () => {
     try {
@@ -98,9 +107,9 @@ export default function TournamentHubPage({
     }
   };
 
-  const handleCopyRegistrationLink = () => {
+  const handleCopyRegistrationLink = async () => {
     const url = `${window.location.origin}/torneios/${tournamentId}/inscricao`;
-    navigator.clipboard.writeText(url);
+    await copyToClipboard(url);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2500);
   };
@@ -122,9 +131,9 @@ export default function TournamentHubPage({
     return (
       <div className="flex min-h-[65vh] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent"></div>
-          <span className="text-sm font-semibold text-slate-400">
-            Carregando painel do torneio...
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-amber-500 border-t-transparent"></div>
+          <span className="text-sm font-semibold text-emerald-100/70">
+            Carregando painel do torneio comunitário...
           </span>
         </div>
       </div>
@@ -160,30 +169,53 @@ export default function TournamentHubPage({
   const maxSetsCount = tournament.maxSets || (tournament.setsToWin === 1 ? 1 : 3);
   const setsToWinCount = tournament.setsToWin || Math.ceil(maxSetsCount / 2);
 
+  // Filtered participants list
+  const filteredParticipants = (tournament.participants || []).filter((p) => {
+    const matchesQuery =
+      participantSearch === "" ||
+      p.name.toLowerCase().includes(participantSearch.toLowerCase()) ||
+      (p.nickname && p.nickname.toLowerCase().includes(participantSearch.toLowerCase())) ||
+      (p.partnerName && p.partnerName.toLowerCase().includes(participantSearch.toLowerCase())) ||
+      (p.partnerNickname && p.partnerNickname.toLowerCase().includes(participantSearch.toLowerCase())) ||
+      (p.communityOrProject && p.communityOrProject.toLowerCase().includes(participantSearch.toLowerCase()));
+
+    const matchesBairro =
+      selectedBairroFilter === "TODOS" || p.neighborhood === selectedBairroFilter;
+
+    return matchesQuery && matchesBairro;
+  });
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
       {/* Top Breadcrumb & Action Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-400 hover:text-emerald-400 transition-colors"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-emerald-200/70 hover:text-amber-400 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Voltar para todos os torneios</span>
+          <span>Voltar para todos os campeonatos</span>
         </Link>
 
-        {/* Quick public registration CTA */}
-        <div className="flex items-center gap-2">
+        {/* Quick public registration & social buttons */}
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setIsSocialCardOpen(true)}
+            className="flex items-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-950/40 px-3 py-1.5 text-xs font-bold text-amber-300 hover:bg-amber-900/60 transition-colors shadow-sm"
+          >
+            <Share2 className="h-3.5 w-3.5" />
+            <span>Card Stories / Status</span>
+          </button>
           <button
             onClick={handleCopyRegistrationLink}
-            className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-800 transition-colors"
+            className="flex items-center gap-1.5 rounded-lg border border-collegiate-border bg-collegiate-surface px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-collegiate-surfaceHover transition-colors"
           >
-            <Copy className="h-3.5 w-3.5 text-emerald-400" />
-            <span>{copiedLink ? "Link Copiado!" : "Copiar Link de Inscrição"}</span>
+            <Copy className="h-3.5 w-3.5 text-amber-400" />
+            <span>{copiedLink ? "Link Copiado!" : "Copiar Inscrição"}</span>
           </button>
           <button
             onClick={handleShareWhatsApp}
-            className="flex items-center gap-1.5 rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-600 transition-colors shadow"
+            className="flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors shadow"
           >
             <MessageCircle className="h-3.5 w-3.5" />
             <span>WhatsApp</span>
@@ -205,6 +237,11 @@ export default function TournamentHubPage({
               <span className="rounded-md bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 text-xs font-semibold text-amber-400">
                 Sets até {tournament.pointsPerSet} pts (Melhor de {maxSetsCount})
               </span>
+              {tournament.community && (
+                <span className="rounded-md bg-emerald-950/60 border border-emerald-500/30 px-2.5 py-0.5 text-xs font-bold text-emerald-300">
+                  📍 {tournament.community}
+                </span>
+              )}
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
@@ -212,7 +249,7 @@ export default function TournamentHubPage({
             </h1>
 
             {tournament.description && (
-              <p className="text-sm text-emerald-100/70 leading-relaxed font-normal">
+              <p className="text-sm text-emerald-100/80 leading-relaxed font-normal">
                 {tournament.description}
               </p>
             )}
@@ -260,7 +297,7 @@ export default function TournamentHubPage({
               className="flex items-center justify-center gap-2 rounded-2xl border border-emerald-500/40 bg-emerald-950/40 px-6 py-3 text-sm font-bold text-emerald-300 hover:bg-emerald-900/60 transition-all text-center"
             >
               <Users className="h-4 w-4" />
-              <span>Página de Inscrição Pública</span>
+              <span>Inscrição Pública (WhatsApp)</span>
             </Link>
           </div>
         </div>
@@ -327,7 +364,7 @@ export default function TournamentHubPage({
             )}
           >
             <Flame className="h-4 w-4" />
-            <span>Partidas & Placar ({matchesCount})</span>
+            <span>Partidas & Mesas ({matchesCount})</span>
           </button>
 
           <button
@@ -408,6 +445,13 @@ export default function TournamentHubPage({
           onMatchUpdated={fetchTournamentData}
         />
       )}
+
+      {/* Social Card Modal */}
+      <SocialCardModal
+        tournament={tournament}
+        isOpen={isSocialCardOpen}
+        onClose={() => setIsSocialCardOpen(false)}
+      />
     </div>
   );
 }

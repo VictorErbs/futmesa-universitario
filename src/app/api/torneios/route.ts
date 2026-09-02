@@ -40,6 +40,9 @@ export async function POST(req: NextRequest) {
       setsToWin,
       advantageRule = true,
       location,
+      community,
+      sponsors,
+      rulesNote,
       startDate,
     } = body;
 

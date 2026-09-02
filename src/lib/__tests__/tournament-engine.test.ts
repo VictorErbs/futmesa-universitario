@@ -371,8 +371,45 @@ describe('Tournament Engine', () => {
       const groupAStandings = [
         {
           participantId: 'pA1',
-          participantName: '1st A',
+          participantName: 'Time A1',
           groupName: 'Grupo A',
+          played: 3,
+          won: 3,
+          lost: 0,
+          points: 9,
+          setsWon: 6,
+          setsLost: 1,
+          setsDifference: 5,
+          pointsWon: 108,
+          pointsLost: 70,
+          pointsDifference: 38,
+          setDiff: 5,
+          pointDiff: 38
+        },
+        {
+          participantId: 'pA2',
+          participantName: 'Time A2',
+          groupName: 'Grupo A',
+          played: 3,
+          won: 2,
+          lost: 1,
+          points: 6,
+          setsWon: 4,
+          setsLost: 3,
+          setsDifference: 1,
+          pointsWon: 90,
+          pointsLost: 85,
+          pointsDifference: 5,
+          setDiff: 1,
+          pointDiff: 5
+        }
+      ]
+
+      const groupBStandings = [
+        {
+          participantId: 'pB1',
+          participantName: 'Time B1',
+          groupName: 'Grupo B',
           played: 3,
           won: 3,
           lost: 0,
@@ -382,44 +419,13 @@ describe('Tournament Engine', () => {
           setsDifference: 6,
           pointsWon: 108,
           pointsLost: 60,
-          pointsDifference: 48
-        },
-        {
-          participantId: 'pA2',
-          participantName: '2nd A',
-          groupName: 'Grupo A',
-          played: 3,
-          won: 2,
-          lost: 1,
-          points: 6,
-          setsWon: 4,
-          setsLost: 2,
-          setsDifference: 2,
-          pointsWon: 95,
-          pointsLost: 80,
-          pointsDifference: 15
-        }
-      ]
-
-      const groupBStandings = [
-        {
-          participantId: 'pB1',
-          participantName: '1st B',
-          groupName: 'Grupo B',
-          played: 3,
-          won: 3,
-          lost: 0,
-          points: 9,
-          setsWon: 6,
-          setsLost: 1,
-          setsDifference: 5,
-          pointsWon: 105,
-          pointsLost: 70,
-          pointsDifference: 35
+          pointsDifference: 48,
+          setDiff: 6,
+          pointDiff: 48
         },
         {
           participantId: 'pB2',
-          participantName: '2nd B',
+          participantName: 'Time B2',
           groupName: 'Grupo B',
           played: 3,
           won: 2,
@@ -430,7 +436,9 @@ describe('Tournament Engine', () => {
           setsDifference: 1,
           pointsWon: 90,
           pointsLost: 85,
-          pointsDifference: 5
+          pointsDifference: 5,
+          setDiff: 1,
+          pointDiff: 5
         }
       ]
 

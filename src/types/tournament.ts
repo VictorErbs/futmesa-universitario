@@ -27,11 +27,18 @@ export type MatchStatus =
 export interface ParticipantType {
   id: string;
   name: string;
+  nickname?: string | null;
   partnerName?: string | null;
+  partnerNickname?: string | null;
+  neighborhood?: string | null;
+  communityOrProject?: string | null;
   phone?: string | null;
   email?: string | null;
   seed?: number | null;
   status: string;
+  phoneVerified?: boolean;
+  verificationCode?: string | null;
+  codeExpiresAt?: Date | string | null;
   tournamentId: string;
   groupId?: string | null;
   groupName?: string | null;
@@ -95,6 +102,9 @@ export interface TournamentType {
   maxSets?: number;
   advantageRule?: boolean;
   location?: string | null;
+  community?: string | null;
+  sponsors?: string | null;
+  rulesNote?: string | null;
   startDate?: Date | string | null;
   status: TournamentStatus;
   createdAt: Date | string;

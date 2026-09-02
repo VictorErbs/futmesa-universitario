@@ -1,0 +1,1 @@
+const { PrismaClient } = require('@prisma/client'); const prisma = new PrismaClient(); async function run() { const m = await prisma.match.findUnique({ where: { id: '3ff6f6d1-4dfc-41f7-beae-de4665470dfa' }, include: { participant1: true }}); console.log(JSON.stringify(m, null, 2)); } run().catch(console.log);

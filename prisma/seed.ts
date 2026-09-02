@@ -17,7 +17,7 @@ async function main() {
     data: {
       title: "1º Torneio Universitário de MesaMatch 2026",
       description:
-        "Campeonato oficial do projeto de extensão universitária. Duplas mistas, masculinas e femininas disputando o troféu no ginásio.",
+        "Grande torneio das praças e praias de Olinda. Duplas representando as comunidades de Rio Doce, Peixinhos, Bultrins e Alto da Sé.",
       modality: "DOUBLES",
       format: "SINGLE_ELIMINATION",
       pointsPerSet: 18,
@@ -29,10 +29,11 @@ async function main() {
     },
   });
 
-  // Participants for T1
+  // Participants for T1 with nicknames and Olinda neighborhoods
   const p1 = await prisma.participant.create({
     data: {
       name: "Carlos Eduardo",
+      nickname: "Dadá",
       partnerName: "Rafael Santos",
       phone: "(11) 98765-4321",
       email: "carlos.MesaMatch@faculdade.edu.br",
@@ -45,9 +46,12 @@ async function main() {
   const p2 = await prisma.participant.create({
     data: {
       name: "Lucas Ferreira",
+      nickname: "Luquinhas",
       partnerName: "Mateus Silva",
-      phone: "(11) 97777-8888",
-      email: "lucas.mateus@faculdade.edu.br",
+      partnerNickname: "Teus",
+      neighborhood: "Peixinhos",
+      communityOrProject: "Projeto Esporte & Cidadania",
+      phone: "(81) 97777-8888",
       seed: 2,
       tournamentId: t1.id,
       status: "CONFIRMED",
@@ -57,8 +61,12 @@ async function main() {
   const p3 = await prisma.participant.create({
     data: {
       name: "Gabriel Souza",
+      nickname: "Biel",
       partnerName: "Bruno Costa",
-      phone: "(11) 96666-5555",
+      partnerNickname: "Bruninho",
+      neighborhood: "Bultrins",
+      communityOrProject: "Futmesa dos Bultrins",
+      phone: "(81) 96666-5555",
       seed: 3,
       tournamentId: t1.id,
       status: "CONFIRMED",
@@ -68,8 +76,12 @@ async function main() {
   const p4 = await prisma.participant.create({
     data: {
       name: "Felipe Almeida",
+      nickname: "Lipe",
       partnerName: "Rodrigo Lima",
-      phone: "(11) 95555-4444",
+      partnerNickname: "Digão",
+      neighborhood: "Alto da Sé / Carmo",
+      communityOrProject: "Guerreiros da Sé",
+      phone: "(81) 95555-4444",
       seed: 4,
       tournamentId: t1.id,
       status: "CONFIRMED",
@@ -83,7 +95,7 @@ async function main() {
       stage: "FINAL",
       round: 2,
       matchNumber: 3,
-      court: "Mesa Central",
+      court: "Mesa 1 - Praia",
       status: "SCHEDULED",
     },
   });
@@ -101,7 +113,7 @@ async function main() {
       stage: "SEMI_FINALS",
       round: 1,
       matchNumber: 1,
-      court: "Mesa 1",
+      court: "Mesa 1 - Praia",
       participant1Id: p1.id,
       participant2Id: p2.id,
       winnerId: p1.id,
@@ -126,7 +138,7 @@ async function main() {
       stage: "SEMI_FINALS",
       round: 1,
       matchNumber: 2,
-      court: "Mesa 2",
+      court: "Mesa 2 - Coberta",
       participant1Id: p3.id,
       participant2Id: p4.id,
       nextMatchId: finalMatch.id,
@@ -149,29 +161,31 @@ async function main() {
     data: { participant1Id: p1.id },
   });
 
-  // 2. Torneio 2: Desafio Individual X1 Comunitário (Inscrições Abertas)
+  // 2. Torneio 2: Desafio X1 Individual da Praça do Fortim - Carmo (Inscrições Abertas)
   const t2 = await prisma.tournament.create({
     data: {
       title: "Desafio Individual X1 de MesaMatch 2026",
       description:
-        "Torneio individual dinâmico no formato 1x1, sets até 15 pontos, aberto para toda a comunidade universitária e convidados.",
+        "Disputa individual 1x1 rápida no coração histórico de Olinda. Set único até 18 pontos com premiação comunitária.",
       modality: "INDIVIDUAL",
       format: "SINGLE_ELIMINATION",
-      pointsPerSet: 15,
+      pointsPerSet: 18,
       setsToWin: 1,
       advantageRule: true,
-      location: "Praça Esportiva Universitária",
-      startDate: new Date(Date.now() + 3 * 86400000),
+      location: "Praça do Fortim - Carmo (Olinda/PE)",
+      community: "Alto da Sé / Carmo",
+      sponsors: "Açaí da Sé • Tapioca da Vovó • Lanchonete do Fortim",
+      startDate: new Date(Date.now() + 2 * 86400000),
       status: "REGISTRATION",
     },
   });
 
   await prisma.participant.createMany({
     data: [
-      { name: "Thiago Rocha", seed: 1, tournamentId: t2.id, phone: "(11) 94444-1111", status: "CONFIRMED" },
-      { name: "Diego Martins", seed: 2, tournamentId: t2.id, phone: "(11) 94444-2222", status: "CONFIRMED" },
-      { name: "Renato Augusto", seed: 3, tournamentId: t2.id, phone: "(11) 94444-3333", status: "CONFIRMED" },
-      { name: "Victor Hugo", seed: 4, tournamentId: t2.id, phone: "(11) 94444-4444", status: "CONFIRMED" },
+      { name: "Thiago Rocha", nickname: "Thiaguinho", neighborhood: "Alto da Sé / Carmo", communityOrProject: "Fortim Futmesa", seed: 1, tournamentId: t2.id, phone: "(81) 94444-1111", status: "CONFIRMED" },
+      { name: "Diego Martins", nickname: "Dieguito", neighborhood: "Jardim Brasil", communityOrProject: "Jardim Brasil FC", seed: 2, tournamentId: t2.id, phone: "(81) 94444-2222", status: "CONFIRMED" },
+      { name: "Renato Augusto", nickname: "Rei da Mesa", neighborhood: "Sítio Novo", communityOrProject: "Sítio Novo Teqball", seed: 3, tournamentId: t2.id, phone: "(81) 94444-3333", status: "CONFIRMED" },
+      { name: "Victor Hugo", nickname: "Vitinho", neighborhood: "Amaro Branco", communityOrProject: "Pescadores da Bola", seed: 4, tournamentId: t2.id, phone: "(81) 94444-4444", status: "CONFIRMED" },
     ],
   });
 

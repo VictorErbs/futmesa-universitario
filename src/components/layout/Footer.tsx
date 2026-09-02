@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Trophy, Heart, Github, GraduationCap, Sparkles } from "lucide-react";
+import { Trophy, Heart, MapPin } from "lucide-react";
 
 export const Footer = () => {
   return (
@@ -21,8 +21,8 @@ export const Footer = () => {
               Plataforma de extensão universitária criada para fomentar a integração, o espírito atlético e o esporte em campeonatos de MesaMatch.
             </p>
             <div className="inline-flex items-center gap-2 rounded-lg bg-collegiate-surface border border-collegiate-border px-3 py-1.5 text-xs text-amber-300">
-              <GraduationCap className="h-4 w-4 text-amber-400" />
-              <span>Iniciativa de Extensão Universitária • Uso Gratuito</span>
+              <MapPin className="h-4 w-4 text-amber-400" />
+              <span>Rio Doce • Peixinhos • Bultrins • Alto da Sé • Sítio Novo • Olinda/PE</span>
             </div>
           </div>
 
@@ -34,12 +34,12 @@ export const Footer = () => {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/" className="hover:text-amber-400 text-slate-300 transition-colors">
-                  Torneios em Andamento
+                  Campeonatos em Andamento
                 </Link>
               </li>
               <li>
                 <Link href="/torneios/novo" className="hover:text-amber-400 text-slate-300 transition-colors">
-                  Criar Novo Torneio
+                  Criar Novo Campeonato
                 </Link>
               </li>
             </ul>
@@ -51,7 +51,7 @@ export const Footer = () => {
               Regras do MesaMatch
             </h4>
             <p className="text-xs text-emerald-100/70 leading-relaxed">
-              Máximo de 3 toques por equipe, proibido tocar na mesa com as mãos ou corpo, saque alternado e sets em 15, 18 ou 21 pontos com vantagem de 2 pontos.
+              Máximo de 3 toques por dupla, proibido encostar na mesa, saques alternados nos pés e sets em 15, 18 ou 21 pontos com vantagem de 2.
             </p>
           </div>
         </div>
@@ -60,10 +60,10 @@ export const Footer = () => {
           <p>
             &copy; {new Date().getFullYear()} MesaMatch &bull; Desenvolvido para a comunidade.
           </p>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 text-emerald-200/80">
             <span>Desenvolvido com</span>
-            <Heart className="h-3.5 w-3.5 text-red-500 fill-red-500" />
-            <span>para o esporte universitário</span>
+            <Heart className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
+            <span>para as quebradas de Olinda</span>
           </div>
         </div>
       </div>
