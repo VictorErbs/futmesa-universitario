@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { TournamentType, MatchType } from "@/types/tournament";
 import { LiveScoreboardModal } from "@/components/tournament/LiveScoreboardModal";
+import { SocialCardModal } from "@/components/tournament/SocialCardModal";
 import { OverviewTab } from "@/components/tournament/tabs/OverviewTab";
 import { BracketTab } from "@/components/tournament/tabs/BracketTab";
 import { GroupsTab } from "@/components/tournament/tabs/GroupsTab";
@@ -109,7 +110,7 @@ export default function TournamentHubPage({
 
   const handleCopyRegistrationLink = async () => {
     const url = `${window.location.origin}/torneios/${tournamentId}/inscricao`;
-    await copyToClipboard(url);
+    await navigator.clipboard.writeText(url);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2500);
   };

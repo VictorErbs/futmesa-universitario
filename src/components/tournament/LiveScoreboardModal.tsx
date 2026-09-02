@@ -278,7 +278,7 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
             sideLabel={leftSide === 1 ? "Lado 1" : "Lado 2"}
             playerName={leftName}
             score={leftScore}
-            setsWon={leftSetsWon}
+            setsWon={leftSetsWon ?? 0}
             onScoreChange={(delta) => handleScoreChange(leftSide, delta)}
             disabledMinus={leftScore === 0}
           />
@@ -286,7 +286,7 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
             sideLabel={rightSide === 1 ? "Lado 1" : "Lado 2"}
             playerName={rightName}
             score={rightScore}
-            setsWon={rightSetsWon}
+            setsWon={rightSetsWon ?? 0}
             onScoreChange={(delta) => handleScoreChange(rightSide, delta)}
             disabledMinus={rightScore === 0}
           />

@@ -27,6 +27,7 @@ export default function NovoTorneioPage() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
+    community: "", // Added community field
     modality: "DUPLAS", // INDIVIDUAL, DUPLAS
     format: "MATA_MATA", // MATA_MATA, GRUPOS_E_MATA_MATA
     pointsPerSet: 18, // 15, 18, 21
@@ -290,27 +291,7 @@ export default function NovoTorneioPage() {
             </div>
           </div>
 
-          {/* Grid: Local e Data */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Local */}
-            <div className="space-y-2">
-              <label
-                htmlFor="location"
-                className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5"
-              >
-                <MapPin className="h-4 w-4 text-emerald-400" />
-                <span>Local do Evento</span>
-              </label>
-              <input
-                type="text"
-                id="location"
-                name="location"
-                placeholder="Ex: Mesa de MesaMatch - Ginásio Universitário"
-                value={formData.location}
-                onChange={handleChange}
-                className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-              />
-            </div>
+
 
           {/* Descrição / Avisos Comunitários */}
           <div className="space-y-2">
