@@ -177,38 +177,38 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-2 sm:p-4 overflow-y-auto">
-      <div className="relative w-full max-w-4xl rounded-3xl border border-slate-700 bg-slate-950 p-4 sm:p-6 shadow-2xl flex flex-col justify-between max-h-[96vh]">
+      <div className="relative w-full max-w-4xl rounded-3xl border border-collegiate-border bg-collegiate-dark/95 arena-grid-pattern p-4 sm:p-7 shadow-2xl flex flex-col justify-between max-h-[96vh]">
         {/* Top Bar */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="flex items-center justify-between border-b border-collegiate-border/80 pb-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 font-bold border border-amber-500/30 shadow-md">
               <Trophy className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-black text-white">
-                  Placar Digital da Mesa
+                <h2 className="text-base sm:text-lg font-black text-white tracking-tight">
+                  Mesa de Arbitragem Oficial
                 </h2>
-                <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-xs font-bold text-emerald-400 border border-emerald-500/30">
-                  {match.court || "Mesa 1"}
+                <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-black text-emerald-400 border border-emerald-500/30 tracking-wider uppercase">
+                  {match.court || "Mesa Central"}
                 </span>
               </div>
-              <p className="text-xs text-slate-400">
-                {match.roundName || "Mata-mata"} &bull; Regra: {pointsPerSet} pts (Diferença de 2)
+              <p className="text-xs text-emerald-200/70">
+                {match.roundName || "Mata-mata"} &bull; Regra Oficial: {pointsPerSet} pts (Diferença de 2)
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="rounded-full p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+            className="rounded-full p-2 text-emerald-200/60 hover:bg-collegiate-surface hover:text-white transition-colors"
           >
             <X className="h-6 w-6" />
           </button>
         </div>
 
         {/* Set Selector Tabs */}
-        <div className="my-3 flex items-center justify-between gap-2 overflow-x-auto py-1">
+        <div className="my-3.5 flex items-center justify-between gap-2 overflow-x-auto py-1">
           <div className="flex items-center gap-2">
             {sets.map((s, idx) => {
               const isCurr = idx === currentSetIndex;
@@ -217,40 +217,40 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
                   key={idx}
                   onClick={() => dispatch({ type: "SET_CURRENT_SET", index: idx })}
                   className={cn(
-                    "flex items-center gap-2 rounded-xl px-3 sm:px-4 py-1.5 text-xs font-bold transition-all",
+                    "flex items-center gap-2 rounded-xl px-3.5 sm:px-4 py-2 text-xs font-extrabold transition-all border",
                     isCurr
-                      ? "bg-emerald-500 text-emerald-950 shadow-md shadow-emerald-500/30 scale-105"
-                      : "bg-slate-900 text-slate-400 border border-slate-800 hover:border-slate-700"
+                      ? "bg-amber-400 text-collegiate-dark border-amber-300 shadow-md shadow-amber-500/30 scale-105"
+                      : "bg-collegiate-surface/90 text-emerald-100/70 border-collegiate-border hover:border-amber-400/40 hover:text-white"
                   )}
                 >
-                  <span>SET {idx + 1}</span>
-                  <span className="font-mono text-[11px] opacity-80">
+                  <span className="tracking-wide">SET {idx + 1}</span>
+                  <span className="font-mono text-[11px] opacity-90 font-black">
                     ({s.score1} - {s.score2})
                   </span>
-                  {s.isFinished && <CheckCircle className="h-3.5 w-3.5" />}
+                  {s.isFinished && <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />}
                 </button>
               );
             })}
           </div>
 
           {/* Quick Actions: Inverter lados, Desfazer */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => dispatch({ type: "TOGGLE_SWAP" })}
               title="Inverter Lados da Mesa"
-              className="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800"
+              className="flex items-center gap-1.5 rounded-xl border border-collegiate-border bg-collegiate-surface/90 px-3 py-2 text-xs font-bold text-emerald-100/90 hover:bg-collegiate-surfaceHover hover:border-amber-400/50 transition-colors shadow-sm"
             >
-              <ArrowLeftRight className="h-3.5 w-3.5" />
+              <ArrowLeftRight className="h-3.5 w-3.5 text-amber-400" />
               <span className="hidden sm:inline">Inverter Lados</span>
             </button>
             <button
               onClick={handleUndo}
               disabled={history.length === 0}
               title="Desfazer último ponto"
-              className="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800 disabled:opacity-40"
+              className="flex items-center gap-1.5 rounded-xl border border-collegiate-border bg-collegiate-surface/90 px-3 py-2 text-xs font-bold text-emerald-100/90 hover:bg-collegiate-surfaceHover hover:border-amber-400/50 disabled:opacity-30 disabled:pointer-events-none transition-colors shadow-sm"
             >
-              <RotateCcw className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Desfazer</span>
+              <RotateCcw className="h-3.5 w-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Desfazer Ponto</span>
             </button>
           </div>
         </div>
@@ -259,16 +259,16 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
         <div className="mb-3 flex items-center justify-center">
           <div
             className={cn(
-              "inline-flex items-center gap-2 rounded-full px-4 py-1 text-xs sm:text-sm font-bold tracking-wide transition-all",
+              "inline-flex items-center gap-2 rounded-full px-5 py-1.5 text-xs sm:text-sm font-black tracking-wide transition-all shadow-lg",
               scoreState.isDeuce
-                ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 amber-glow"
+                ? "bg-amber-500/20 text-amber-300 border-2 border-amber-400 animate-pulse-tension"
                 : scoreState.advantage
-                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 pitch-glow"
-                : "bg-slate-900 text-slate-300 border border-slate-800"
+                ? "bg-emerald-500/25 text-emerald-300 border border-emerald-400 pitch-glow-intense animate-pulse-live"
+                : "bg-collegiate-surface text-emerald-200/90 border border-collegiate-border"
             )}
           >
-            <Flame className="h-4 w-4" />
-            <span>{scoreState.statusText}</span>
+            <Flame className={cn("h-4 w-4", scoreState.isDeuce ? "text-amber-400 animate-bounce" : "text-emerald-400")} />
+            <span className="uppercase">{scoreState.statusText}</span>
           </div>
         </div>
 
@@ -281,6 +281,7 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
             setsWon={leftSetsWon ?? 0}
             onScoreChange={(delta) => handleScoreChange(leftSide, delta)}
             disabledMinus={leftScore === 0}
+            isInLead={leftScore > rightScore}
           />
           <PlayerScoreCard
             sideLabel={rightSide === 1 ? "Lado 1" : "Lado 2"}
@@ -289,6 +290,7 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
             setsWon={rightSetsWon ?? 0}
             onScoreChange={(delta) => handleScoreChange(rightSide, delta)}
             disabledMinus={rightScore === 0}
+            isInLead={rightScore > leftScore}
           />
         </div>
 

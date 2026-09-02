@@ -86,7 +86,7 @@
   top: 50%;
   width: 24px;
   height: 2px;
-  background-color: #334155;
+  background-color: #1a483a;
 }
 
 @keyframes pulse-live {
@@ -96,10 +96,68 @@
   }
   50% {
     opacity: 0.6;
-    transform: scale(1.1);
+    transform: scale(1.08);
   }
 }
 
 .animate-pulse-live {
   animation: pulse-live 2s infinite ease-in-out;
+}
+
+/* Match Point & Deuce Intense Pulse */
+@keyframes pulse-tension {
+  0%, 100% {
+    box-shadow: 0 0 20px 2px rgba(245, 158, 11, 0.4);
+    border-color: rgba(245, 158, 11, 0.9);
+  }
+  50% {
+    box-shadow: 0 0 35px 8px rgba(245, 158, 11, 0.7);
+    border-color: rgba(251, 191, 36, 1);
+  }
+}
+
+.animate-pulse-tension {
+  animation: pulse-tension 1.5s infinite ease-in-out;
+}
+
+/* Score number pop animation */
+@keyframes score-pop {
+  0% {
+    transform: scale(0.92);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-score-pop {
+  animation: score-pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Arena turf subtle grid */
+.arena-grid-pattern {
+  background-image: radial-gradient(rgba(245, 158, 11, 0.08) 1px, transparent 1px), radial-gradient(rgba(16, 185, 129, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: 0 0, 16px 16px;
+}
+
+/* Glassmorphic stadium card */
+.glass-panel {
+  background: rgba(14, 42, 33, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(26, 72, 58, 0.8);
+}
+
+.glass-panel-hover {
+  transition: all 0.25s ease;
+}
+
+.glass-panel-hover:hover {
+  background: rgba(21, 61, 48, 0.95);
+  border-color: rgba(245, 158, 11, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5), 0 0 20px -5px rgba(245, 158, 11, 0.15);
 }
