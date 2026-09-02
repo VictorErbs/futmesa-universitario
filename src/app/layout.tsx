@@ -10,11 +10,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Futmesa Universitário | Gestão de Torneios & Placar ao Vivo",
+  title: "MesaMatch | Gestão de Torneios & Placar ao Vivo",
   description:
-    "Plataforma de gestão de campeonatos de futmesa para projetos de extensão universitária e comunidade. Chaveamento automático, grupos e placar digital.",
+    "Plataforma de gestão de campeonatos de MesaMatch para projetos de extensão universitária e comunidade. Chaveamento automático, grupos e placar digital.",
   keywords: [
-    "futmesa",
+    "MesaMatch",
     "torneio universitário",
     "extensão universitária",
     "placar ao vivo",

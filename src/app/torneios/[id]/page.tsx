@@ -19,10 +19,12 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { TournamentType, MatchType } from "@/types/tournament";
-import { BracketTree } from "@/components/tournament/BracketTree";
-import { GroupTable } from "@/components/tournament/GroupTable";
-import { MatchCard } from "@/components/tournament/MatchCard";
 import { LiveScoreboardModal } from "@/components/tournament/LiveScoreboardModal";
+import { OverviewTab } from "@/components/tournament/tabs/OverviewTab";
+import { BracketTab } from "@/components/tournament/tabs/BracketTab";
+import { GroupsTab } from "@/components/tournament/tabs/GroupsTab";
+import { MatchesTab } from "@/components/tournament/tabs/MatchesTab";
+import { ParticipantsTab } from "@/components/tournament/tabs/ParticipantsTab";
 import { formatDateTime } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
@@ -106,7 +108,7 @@ export default function TournamentHubPage({
   const handleShareWhatsApp = () => {
     const url = `${window.location.origin}/torneios/${tournamentId}/inscricao`;
     const text = encodeURIComponent(
-      `🏆 Inscrições abertas para o *${tournament?.title}* de Futmesa! Garanta sua vaga pelo link:\n${url}`
+      `🏆 Inscrições abertas para o *${tournament?.title}* de MesaMatch! Garanta sua vaga pelo link:\n${url}`
     );
     window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
   };
@@ -345,263 +347,51 @@ export default function TournamentHubPage({
 
       {/* Tab Content 1: Overview */}
       {activeTab === "overview" && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left / Main Overview Info */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Quick Summary Card */}
-            <div className="rounded-2xl border border-collegiate-border bg-collegiate-surface/90 p-6 space-y-4 shadow-md">
-              <h3 className="text-lg font-black text-white flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-amber-400" />
-                <span>Regulamento & Formato da Competição</span>
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-slate-200">
-                <div className="rounded-xl bg-collegiate-dark/80 p-3.5 border border-collegiate-border">
-                  <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Modalidade</span>
-                  <p className="font-semibold text-white mt-0.5">
-                    {isDuplas ? "Duplas (2x2)" : "Individual (1x1)"}
-                  </p>
-                </div>
-
-                <div className="rounded-xl bg-collegiate-dark/80 p-3.5 border border-collegiate-border">
-                  <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Formato</span>
-                  <p className="font-semibold text-white mt-0.5">
-                    {isGroups ? "Fase de Grupos + Mata-Mata Final" : "Mata-Mata Eliminatório Direto"}
-                  </p>
-                </div>
-
-                <div className="rounded-xl bg-collegiate-dark/80 p-3.5 border border-collegiate-border">
-                  <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Pontuação do Set</span>
-                  <p className="font-semibold text-white mt-0.5">
-                    {tournament.pointsPerSet} pontos com vantagem de 2
-                  </p>
-                </div>
-
-                <div className="rounded-xl bg-collegiate-dark/80 p-3.5 border border-collegiate-border">
-                  <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Sets por Partida</span>
-                  <p className="font-semibold text-white mt-0.5">
-                    Melhor de {maxSetsCount} sets ({setsToWinCount} set(s) para vencer)
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Rules Summary */}
-            <div className="rounded-2xl border border-collegiate-border bg-collegiate-surface/90 p-6 space-y-3 shadow-md">
-              <h3 className="text-base font-black text-amber-300">Regras Oficiais do Futmesa Aplicadas</h3>
-              <ul className="space-y-2 text-xs sm:text-sm text-emerald-100/80 list-disc list-inside">
-                <li>Máximo de 3 toques por equipe antes de devolver a bola para o campo adversário.</li>
-                <li>Proibido encostar qualquer parte do corpo ou mãos na mesa durante a jogada.</li>
-                <li>Saque alternado cruzado a cada 2 pontos com bola lançada com os pés.</li>
-                <li>Em caso de empate em {tournament.pointsPerSet - 1}x{tournament.pointsPerSet - 1}, o jogo segue até que um lado abra 2 pontos de vantagem.</li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Right / Quick Share & Stats Sidebar */}
-          <div className="space-y-6">
-            <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-b from-amber-950/30 to-collegiate-dark p-6 space-y-4 shadow-lg">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Users className="h-5 w-5 text-amber-400" />
-                <span>Inscrições da Comunidade</span>
-              </h3>
-              <p className="text-xs text-emerald-100/70">
-                Compartilhe o link do formulário público com alunos, atletas e a comunidade para que façam suas inscrições em 1 clique.
-              </p>
-
-              <div className="pt-2 flex flex-col gap-2.5">
-                <button
-                  onClick={handleCopyRegistrationLink}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-amber-500 py-3 text-xs sm:text-sm font-bold text-collegiate-dark shadow-lg shadow-amber-950/40 hover:bg-amber-400 transition-all border border-amber-400"
-                >
-                  <Copy className="h-4 w-4" />
-                  <span>{copiedLink ? "Link Copiado com Sucesso!" : "Copiar Link de Inscrição"}</span>
-                </button>
-
-                <button
-                  onClick={handleShareWhatsApp}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-800/80 border border-emerald-500/30 py-2.5 text-xs sm:text-sm font-bold text-emerald-100 hover:bg-emerald-700 transition-all"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  <span>Enviar no WhatsApp</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Quick Status Stats */}
-            <div className="rounded-2xl border border-collegiate-border bg-collegiate-surface/90 p-5 space-y-3 text-xs shadow-md">
-              <h4 className="font-bold uppercase tracking-wider text-amber-300">Resumo do Torneio</h4>
-              <div className="flex items-center justify-between py-1 border-b border-collegiate-border">
-                <span className="text-emerald-100/70">Inscritos</span>
-                <span className="font-bold text-white tabular-nums">{participantsCount}</span>
-              </div>
-              <div className="flex items-center justify-between py-1 border-b border-collegiate-border">
-                <span className="text-emerald-100/70">Partidas</span>
-                <span className="font-bold text-white tabular-nums">{matchesCount}</span>
-              </div>
-              <div className="flex items-center justify-between py-1">
-                <span className="text-emerald-100/70">Status</span>
-                <span className="font-bold text-amber-400">
-                  {tournament.status.replace("_", " ")}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <OverviewTab
+          tournament={tournament}
+          isDuplas={isDuplas}
+          isGroups={isGroups}
+          maxSetsCount={maxSetsCount}
+          setsToWinCount={setsToWinCount}
+          participantsCount={participantsCount}
+          matchesCount={matchesCount}
+          copiedLink={copiedLink}
+          onCopyRegistrationLink={handleCopyRegistrationLink}
+          onShareWhatsApp={handleShareWhatsApp}
+        />
       )}
 
       {/* Tab Content 2: Bracket */}
       {activeTab === "bracket" && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-black text-white flex items-center gap-2">
-              <Swords className="h-5 w-5 text-emerald-400" />
-              <span>Chaveamento Eliminatório</span>
-            </h3>
-          </div>
-
-          <BracketTree
-            matches={tournament.matches || []}
-            onOpenScoreboard={handleOpenScoreboard}
-          />
-        </div>
+        <BracketTab
+          matches={tournament.matches || []}
+          onOpenScoreboard={handleOpenScoreboard}
+        />
       )}
 
       {/* Tab Content 3: Groups */}
       {activeTab === "groups" && isGroups && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-black text-white flex items-center gap-2">
-              <Layers className="h-5 w-5 text-emerald-400" />
-              <span>Classificação dos Grupos</span>
-            </h3>
-          </div>
-
-          {tournament.groups && tournament.groups.length > 0 ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {tournament.groups.map((group) => (
-                <GroupTable
-                  key={group.id}
-                  group={group}
-                  pointsPerSet={tournament.pointsPerSet}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 p-12 text-center">
-              <p className="text-sm text-slate-500">
-                Nenhum grupo gerado ainda. Clique em "Sortear Chaves do Torneio" para gerar os grupos.
-              </p>
-            </div>
-          )}
-        </div>
+        <GroupsTab
+          groups={tournament.groups || []}
+          pointsPerSet={tournament.pointsPerSet}
+        />
       )}
 
       {/* Tab Content 4: Matches & Scoreboard */}
       {activeTab === "matches" && (
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="text-lg font-black text-white flex items-center gap-2">
-                <PlayCircle className="h-5 w-5 text-emerald-400" />
-                <span>Lista de Partidas & Placar da Mesa</span>
-              </h3>
-              <p className="text-xs text-slate-400">
-                Selecione qualquer partida para abrir o Placar Digital ao Vivo dos árbitros
-              </p>
-            </div>
-          </div>
-
-          {tournament.matches && tournament.matches.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {tournament.matches.map((match) => (
-                <MatchCard
-                  key={match.id}
-                  match={match}
-                  onOpenScoreboard={handleOpenScoreboard}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 p-12 text-center">
-              <p className="text-sm text-slate-500">
-                Nenhuma partida gerada ainda. Realize o sorteio das chaves para agendar os jogos.
-              </p>
-            </div>
-          )}
-        </div>
+        <MatchesTab
+          matches={tournament.matches || []}
+          onOpenScoreboard={handleOpenScoreboard}
+        />
       )}
 
       {/* Tab Content 5: Participants */}
       {activeTab === "participants" && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-black text-white flex items-center gap-2">
-              <Users className="h-5 w-5 text-emerald-400" />
-              <span>Atletas e Duplas Inscritos ({participantsCount})</span>
-            </h3>
-
-            <Link
-              href={`/torneios/${tournamentId}/inscricao`}
-              className="rounded-lg bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-emerald-500 transition-colors"
-            >
-              + Nova Inscrição
-            </Link>
-          </div>
-
-          {tournament.participants && tournament.participants.length > 0 ? (
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 overflow-hidden shadow-lg">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs sm:text-sm">
-                  <thead className="border-b border-slate-800 bg-slate-950/60 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                    <tr>
-                      <th className="py-3 px-4 w-12 text-center">#</th>
-                      <th className="py-3 px-4">Nome do Jogador / Dupla</th>
-                      <th className="py-3 px-4">Parceiro</th>
-                      <th className="py-3 px-4">Contato</th>
-                      <th className="py-3 px-4 text-center">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/60">
-                    {tournament.participants.map((p, idx) => (
-                      <tr key={p.id} className="hover:bg-slate-800/40 transition-colors">
-                        <td className="py-3 px-4 text-center font-mono text-slate-500">
-                          {idx + 1}
-                        </td>
-                        <td className="py-3 px-4 font-semibold text-slate-200">
-                          {p.name}
-                        </td>
-                        <td className="py-3 px-4 text-slate-400">
-                          {p.partnerName || "-"}
-                        </td>
-                        <td className="py-3 px-4 text-slate-400 font-mono text-xs">
-                          {p.phone || p.email || "-"}
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <span className="inline-flex items-center rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-400 border border-emerald-500/30">
-                            Confirmado
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 p-12 text-center space-y-3">
-              <p className="text-sm text-slate-500">
-                Nenhum participante inscrito ainda.
-              </p>
-              <Link
-                href={`/torneios/${tournamentId}/inscricao`}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-500"
-              >
-                <span>Inscrever Primeiro Participante</span>
-              </Link>
-            </div>
-          )}
-        </div>
+        <ParticipantsTab
+          participants={tournament.participants || []}
+          participantsCount={participantsCount}
+          tournamentId={tournamentId}
+        />
       )}
 
       {/* Live Scoreboard Modal */}

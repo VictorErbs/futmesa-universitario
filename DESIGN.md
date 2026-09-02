@@ -1,7 +1,7 @@
 ﻿# Diretrizes de Design: Universitário Retrô & Editorial Esportivo
 
 ## 🏛️ Identidade & Visão do Produto
-A plataforma de Futmesa Comunitário da Extensão Universitária utiliza uma linguagem visual de **Liga Acadêmica Tradicional / Editorial Esportivo Clássico**.
+A plataforma de MesaMatch da Extensão Universitária utiliza uma linguagem visual de **Liga Acadêmica Tradicional / Editorial Esportivo Clássico**.
 Ela evoca o prestígio, a tradição e o espírito de equipe dos esportes universitários com a precisão dos scoreboards modernos.
 
 ---

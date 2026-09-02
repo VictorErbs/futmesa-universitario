@@ -1,7 +1,7 @@
-# Plano de Arquitetura e Implementação: Plataforma Futmesa Comunitário
+# Plano de Arquitetura e Implementação: Plataforma MesaMatch
 
 ## 🎯 Goal Description
-Desenvolver uma plataforma web completa, responsiva e focada em dispositivos móveis para organização de campeonatos de **Futmesa** em comunidades locais e projetos de extensão universitária. 
+Desenvolver uma plataforma web completa, responsiva e focada em dispositivos móveis para organização de campeonatos de **MesaMatch** em comunidades locais e projetos de extensão universitária. 
 
 A plataforma foi pensada para operar com **zero atrito localmente** (basta rodar `npm run dev` com SQLite embutido, sem necessidade de Docker ou configurações em nuvem) e com **capacidade de deploy 100% gratuito** na nuvem (Vercel + Neon/Supabase PostgreSQL).
 
@@ -23,7 +23,7 @@ graph TD
     subgraph "Core & Motor de Torneios (Next.js App Router)"
         Engine_Bracket["Gerador de Chaves Mata-Mata (Seeding + Byes)"]
         Engine_Groups["Gerador de Grupos (Round-Robin)"]
-        Engine_Rules["Validador de Regras de Futmesa (Sets, Desempate)"]
+        Engine_Rules["Validador de Regras de MesaMatch (Sets, Desempate)"]
         Auth_Module["Módulo de Autenticação Admin (JWT/Session)"]
     end
 
@@ -74,7 +74,7 @@ graph TD
    - **Mata-Mata (Eliminatória Simples)**: Geração de chaves para 4, 8, 16 ou 32 participantes, com tratamento automático de participantes ímpares (*BYE*).
    - **Fase de Grupos + Mata-Mata**: Divisão automática em grupos de 3 ou 4 duplas/atletas, cálculo de pontos por vitória, saldo de sets e saldo de pontos, avançando os 2 melhores de cada grupo para a fase final eliminatória.
 
-3. **Placar e Regras de Futmesa**:
+3. **Placar e Regras de MesaMatch**:
    - Partidas em melhor de 1 set (18 ou 21 pontos) ou melhor de 3 sets.
    - Regra de diferença de 2 pontos (vantagem).
    - Atualização instantânea dos confrontos no chaveamento assim que uma partida é encerrada.
@@ -102,7 +102,7 @@ graph TD
 ## 🗂️ Proposed Changes & Component Architecture
 
 ```
-futmesa/
+MesaMatch/
 ├── prisma/
 │   ├── schema.prisma           # Modelos de Dados (Torneio, Participante, Grupo, Partida, Set)
 │   └── seed.ts                 # Dados de exemplo para testes locais rápidos

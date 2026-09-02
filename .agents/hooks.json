@@ -1,1 +1,0 @@
-{"rtk-hook":{"PreToolUse":[{"matcher":"run_command","hooks":[{"type":"command","command":"node apply-rtk.js"}]}]}}

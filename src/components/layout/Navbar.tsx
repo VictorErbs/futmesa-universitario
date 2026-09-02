@@ -17,7 +17,7 @@ export const Navbar = () => {
           </div>
           <div className="flex flex-col">
             <span className="text-lg font-black tracking-tight text-white group-hover:text-amber-400 transition-colors">
-              FUTMESA <span className="text-amber-400">UNIVERSITÁRIO</span>
+              MesaMatch <span className="text-amber-400">UNIVERSITÁRIO</span>
             </span>
             <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-300/70">
               Liga Acadêmica &bull; Extensão

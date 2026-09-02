@@ -28,7 +28,7 @@ export default function NovoTorneioPage() {
     format: "MATA_MATA", // MATA_MATA, GRUPOS_E_MATA_MATA
     pointsPerSet: 18, // 15, 18, 21
     maxSets: 3, // 1, 3
-    location: "Mesa Universitária de Futmesa - Campus Central",
+    location: "Mesa Universitária de MesaMatch - Campus Central",
     startDate: new Date().toISOString().slice(0, 16), // YYYY-MM-DDTHH:mm
   });
 
@@ -92,7 +92,7 @@ export default function NovoTorneioPage() {
           </div>
           <div>
             <h1 className="text-2xl font-black text-white tracking-tight">
-              Criar Novo Torneio de Futmesa
+              Criar Novo Torneio de MesaMatch
             </h1>
             <p className="text-xs sm:text-sm text-slate-400">
               Configure as regras esportivas, modalidade e local do campeonato
@@ -121,7 +121,7 @@ export default function NovoTorneioPage() {
               id="title"
               name="title"
               required
-              placeholder="Ex: 1º Torneio Universitário de Futmesa 2026"
+              placeholder="Ex: 1º Torneio Universitário de MesaMatch 2026"
               value={formData.title}
               onChange={handleChange}
               className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
@@ -212,8 +212,8 @@ export default function NovoTorneioPage() {
                 className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
               >
                 <option value={15}>15 Pontos (Diferença de 2)</option>
-                <option value={18}>18 Pontos (Padrão Futmesa)</option>
-                <option value={21}>21 Pontos (Oficial Teqball / Futmesa)</option>
+                <option value={18}>18 Pontos (Padrão MesaMatch)</option>
+                <option value={21}>21 Pontos (Oficial Teqball / MesaMatch)</option>
               </select>
             </div>
 
@@ -253,7 +253,7 @@ export default function NovoTorneioPage() {
                 type="text"
                 id="location"
                 name="location"
-                placeholder="Ex: Mesa de Futmesa - Ginásio Universitário"
+                placeholder="Ex: Mesa de MesaMatch - Ginásio Universitário"
                 value={formData.location}
                 onChange={handleChange}
                 className="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-sm text-white focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"

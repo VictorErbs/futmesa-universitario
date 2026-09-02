@@ -54,7 +54,7 @@ export interface StandingsResult {
 }
 
 /**
- * Checks if a set is completed according to Futmesa rules
+ * Checks if a set is completed according to MesaMatch rules
  */
 export function evaluateSetWinner(
   score1: number,

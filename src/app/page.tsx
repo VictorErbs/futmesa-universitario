@@ -56,12 +56,12 @@ export default async function HomePage() {
           <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white leading-tight">
             Liga Universitária de{" "}
             <span className="text-amber-400">
-              Futmesa
+              MesaMatch
             </span>
           </h1>
 
           <p className="mx-auto max-w-2xl text-base sm:text-lg text-emerald-100/80 leading-relaxed font-normal">
-            Gestão oficial de torneios de futmesa para a comunidade universitária. Inscrições simplificadas, chaveamento mata-mata clássico e mesa de arbitragem digital ao vivo.
+            Gestão oficial de torneios de MesaMatch para a comunidade universitária. Inscrições simplificadas, chaveamento mata-mata clássico e mesa de arbitragem digital ao vivo.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
@@ -163,7 +163,7 @@ export default async function HomePage() {
                 Nenhum torneio cadastrado ainda
               </h3>
               <p className="text-sm text-slate-400 max-w-md">
-                Comece criando o primeiro campeonato de Futmesa do seu projeto de extensão universitária ou comunidade.
+                Comece criando o primeiro campeonato de MesaMatch do seu projeto de extensão universitária ou comunidade.
               </p>
             </div>
             <Link

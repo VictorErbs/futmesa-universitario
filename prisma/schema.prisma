@@ -15,7 +15,7 @@ model Tournament {
   modality      String            @default("DOUBLES")            // 'INDIVIDUAL', 'DOUBLES'
   status        String            @default("REGISTRATION")       // 'REGISTRATION', 'IN_PROGRESS', 'FINISHED'
   setsToWin     Int               @default(2)                    // Ex: 2 para melhor de 3, ou 1 para melhor de 1
-  pointsPerSet  Int               @default(18)                   // 18 pontos padrão do futmesa
+  pointsPerSet  Int               @default(18)                   // 18 pontos padrão do MesaMatch
   advantageRule Boolean           @default(true)                 // Diferença de 2 pontos
   location      String?
   startDate     DateTime?

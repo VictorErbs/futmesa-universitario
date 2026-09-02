@@ -14,11 +14,11 @@ export const Footer = () => {
                 <Trophy className="h-5 w-5 fill-collegiate-dark" />
               </div>
               <span className="text-lg font-black tracking-tight text-white">
-                FUTMESA <span className="text-amber-400">UNIVERSITÁRIO</span>
+                MesaMatch <span className="text-amber-400">UNIVERSITÁRIO</span>
               </span>
             </div>
             <p className="text-sm text-emerald-100/70 max-w-md leading-relaxed">
-              Plataforma de extensão universitária criada para fomentar a integração, o espírito atlético e o esporte em campeonatos de futmesa.
+              Plataforma de extensão universitária criada para fomentar a integração, o espírito atlético e o esporte em campeonatos de MesaMatch.
             </p>
             <div className="inline-flex items-center gap-2 rounded-lg bg-collegiate-surface border border-collegiate-border px-3 py-1.5 text-xs text-amber-300">
               <GraduationCap className="h-4 w-4 text-amber-400" />
@@ -48,7 +48,7 @@ export const Footer = () => {
           {/* Col 3: Regras & Esporte */}
           <div className="space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-amber-300">
-              Regras do Futmesa
+              Regras do MesaMatch
             </h4>
             <p className="text-xs text-emerald-100/70 leading-relaxed">
               Máximo de 3 toques por equipe, proibido tocar na mesa com as mãos ou corpo, saque alternado e sets em 15, 18 ou 21 pontos com vantagem de 2 pontos.
@@ -58,7 +58,7 @@ export const Footer = () => {
 
         <div className="mt-8 border-t border-collegiate-border/60 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <p>
-            &copy; {new Date().getFullYear()} Futmesa Universitário &bull; Desenvolvido para a comunidade.
+            &copy; {new Date().getFullYear()} MesaMatch &bull; Desenvolvido para a comunidade.
           </p>
           <div className="flex items-center gap-1">
             <span>Desenvolvido com</span>

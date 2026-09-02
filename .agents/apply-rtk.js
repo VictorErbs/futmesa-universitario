@@ -1,1 +1,0 @@
-const fs=require("fs");const p=JSON.parse(fs.readFileSync(0,"utf8"));let cmd=p.toolCall.args.CommandLine;if(!cmd.startsWith("rtk ")){cmd="rtk "+cmd;}console.log(JSON.stringify({decision:"allow",overwrite:{CommandLine:cmd}}));

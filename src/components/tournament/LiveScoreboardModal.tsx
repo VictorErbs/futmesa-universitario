@@ -1,22 +1,20 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { MatchType, MatchSetType } from "@/types/tournament";
+import React, { useState } from "react";
+import { MatchType } from "@/types/tournament";
 import { getScoreState, isSetFinished, evaluateMatchWinner } from "@/lib/tournament-engine";
 import confetti from "canvas-confetti";
 import {
   X,
-  Plus,
-  Minus,
   RotateCcw,
   ArrowLeftRight,
   Trophy,
   CheckCircle,
-  AlertCircle,
   Flame,
-  Volume2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useScoreboardState } from "./useScoreboardState";
+import { PlayerScoreCard } from "./PlayerScoreCard";
 
 interface LiveScoreboardModalProps {
   match: MatchType;
@@ -27,12 +25,6 @@ interface LiveScoreboardModalProps {
   onMatchUpdated?: () => void;
 }
 
-interface ScoreHistoryItem {
-  setIndex: number;
-  side: 1 | 2;
-  delta: number;
-}
-
 export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
   match,
   pointsPerSet = 18,
@@ -41,52 +33,13 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
   onClose,
   onMatchUpdated,
 }) => {
-  const [currentSetIndex, setCurrentSetIndex] = useState(0);
-  const [isSwapped, setIsSwapped] = useState(false); // Inverter lados visualmente
-  const [history, setHistory] = useState<ScoreHistoryItem[]>([]);
+  const { state, dispatch } = useScoreboardState(match, maxSets, pointsPerSet, isOpen);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
-  // Initialize or copy sets
-  const initialSets: { score1: number; score2: number; isFinished: boolean }[] = [];
-  const neededWins = Math.ceil(maxSets / 2);
-
-  for (let i = 0; i < maxSets; i++) {
-    const existing = match.sets && match.sets[i];
-    initialSets.push({
-      score1: existing ? existing.score1 : 0,
-      score2: existing ? existing.score2 : 0,
-      isFinished: existing ? existing.isFinished : false,
-    });
-  }
-
-  const [sets, setSets] = useState(initialSets);
-
-  // Synchronize when match prop changes
-  useEffect(() => {
-    if (match.sets && match.sets.length > 0) {
-      const updated: { score1: number; score2: number; isFinished: boolean }[] = [];
-      for (let i = 0; i < maxSets; i++) {
-        const existing = match.sets[i];
-        updated.push({
-          score1: existing ? existing.score1 : 0,
-          score2: existing ? existing.score2 : 0,
-          isFinished: existing ? existing.isFinished : false,
-        });
-      }
-      setSets(updated);
-
-      // Find first unfinished set
-      const firstUnfinished = updated.findIndex((s) => !s.isFinished);
-      if (firstUnfinished !== -1) {
-        setCurrentSetIndex(firstUnfinished);
-      } else {
-        setCurrentSetIndex(Math.max(0, updated.length - 1));
-      }
-    }
-  }, [match, maxSets]);
-
   if (!isOpen) return null;
+
+  const { sets, currentSetIndex, history, isSwapped } = state;
 
   const p1 = match.participant1;
   const p2 = match.participant2;
@@ -108,7 +61,6 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
   const setEvaluation = isSetFinished(currentSet.score1, currentSet.score2, pointsPerSet);
   const matchEvaluation = evaluateMatchWinner(sets, maxSets, pointsPerSet);
 
-  // Trigger confetti on full match victory
   const fireConfetti = () => {
     try {
       confetti({
@@ -123,78 +75,37 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
   };
 
   const handleScoreChange = (side: 1 | 2, delta: number) => {
-    if (matchEvaluation.isFinished && delta > 0) return;
+    dispatch({ type: "SCORE_CHANGE", side, delta, pointsPerSet, maxSets });
 
-    setSets((prev) => {
-      const next = [...prev];
-      const s = { ...next[currentSetIndex] };
-
-      if (side === 1) {
-        s.score1 = Math.max(0, s.score1 + delta);
-      } else {
-        s.score2 = Math.max(0, s.score2 + delta);
-      }
-
-      // Check if this point wins the set
-      const check = isSetFinished(s.score1, s.score2, pointsPerSet);
-      s.isFinished = check.finished;
-
-      next[currentSetIndex] = s;
-      return next;
-    });
-
-    if (delta > 0) {
-      setHistory((prev) => [...prev, { setIndex: currentSetIndex, side, delta }]);
-    }
-
+    // Extract the latest scores to sync properly
+    const newScore1 = side === 1 ? Math.max(0, currentSet.score1 + delta) : currentSet.score1;
+    const newScore2 = side === 2 ? Math.max(0, currentSet.score2 + delta) : currentSet.score2;
+    
     // Auto-save live point in background
     syncLiveScore(
-      side === 1 ? Math.max(0, currentSet.score1 + delta) : currentSet.score1,
-      side === 2 ? Math.max(0, currentSet.score2 + delta) : currentSet.score2
+      side === 1 ? newScore1 : currentSet.score1,
+      side === 2 ? newScore2 : currentSet.score2
     );
   };
 
   const handleUndo = () => {
-    if (history.length === 0) return;
-    const last = history[history.length - 1];
-
-    setSets((prev) => {
-      const next = [...prev];
-      const s = { ...next[last.setIndex] };
-      if (last.side === 1) {
-        s.score1 = Math.max(0, s.score1 - last.delta);
-      } else {
-        s.score2 = Math.max(0, s.score2 - last.delta);
-      }
-      s.isFinished = false;
-      next[last.setIndex] = s;
-      return next;
-    });
-
-    setHistory((prev) => prev.slice(0, prev.length - 1));
+    dispatch({ type: "UNDO" });
   };
 
   const handleFinishSet = () => {
-    setSets((prev) => {
-      const next = [...prev];
-      next[currentSetIndex] = {
-        ...next[currentSetIndex],
-        isFinished: true,
-      };
-      return next;
-    });
-
-    // Check if match is finished
-    const updatedEval = evaluateMatchWinner(
-      sets.map((s, idx) => (idx === currentSetIndex ? { ...s, isFinished: true } : s)),
-      maxSets,
-      pointsPerSet
-    );
+    dispatch({ type: "FINISH_SET", maxSets, pointsPerSet });
+    
+    // Evaluate if match is finished after dispatching
+    // We can't immediately see the new state here easily without duplicating logic,
+    // so we evaluate the NEXT state simulating the finish.
+    const nextSets = [...sets];
+    if (nextSets[currentSetIndex]) {
+      nextSets[currentSetIndex] = { ...nextSets[currentSetIndex], isFinished: true };
+    }
+    const updatedEval = evaluateMatchWinner(nextSets, maxSets, pointsPerSet);
 
     if (updatedEval.isFinished) {
       fireConfetti();
-    } else if (currentSetIndex + 1 < maxSets) {
-      setCurrentSetIndex(currentSetIndex + 1);
     }
   };
 
@@ -252,7 +163,6 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
     }
   };
 
-  // Left vs Right visual mapping based on invert sides
   const leftSide = isSwapped ? 2 : 1;
   const rightSide = isSwapped ? 1 : 2;
 
@@ -305,7 +215,7 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
               return (
                 <button
                   key={idx}
-                  onClick={() => setCurrentSetIndex(idx)}
+                  onClick={() => dispatch({ type: "SET_CURRENT_SET", index: idx })}
                   className={cn(
                     "flex items-center gap-2 rounded-xl px-3 sm:px-4 py-1.5 text-xs font-bold transition-all",
                     isCurr
@@ -326,7 +236,7 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
           {/* Quick Actions: Inverter lados, Desfazer */}
           <div className="flex items-center gap-1.5">
             <button
-              onClick={() => setIsSwapped(!isSwapped)}
+              onClick={() => dispatch({ type: "TOGGLE_SWAP" })}
               title="Inverter Lados da Mesa"
               className="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800"
             >
@@ -362,83 +272,24 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
           </div>
         </div>
 
-        {/* Main Big Scoreboard Grid (Touch friendly) */}
+        {/* Main Big Scoreboard Grid */}
         <div className="grid grid-cols-2 gap-3 sm:gap-6 my-auto">
-          {/* LADO ESQUERDO */}
-          <div className="flex flex-col items-center justify-between rounded-3xl border border-slate-800 bg-gradient-to-b from-slate-900 to-slate-950 p-4 sm:p-6 shadow-xl relative overflow-hidden">
-            {/* Player Name */}
-            <div className="w-full text-center pb-2">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-400 block mb-0.5">
-                {leftSide === 1 ? "Lado 1" : "Lado 2"} &bull; Sets: {leftSetsWon}
-              </span>
-              <h3 className="text-base sm:text-xl font-black text-white truncate">
-                {leftName}
-              </h3>
-            </div>
-
-            {/* Giant Score Display */}
-            <div className="my-2 sm:my-4 flex items-center justify-center">
-              <span className="font-mono text-7xl sm:text-9xl font-black tracking-tighter text-emerald-400 drop-shadow-[0_0_20px_rgba(16,185,129,0.3)]">
-                {leftScore}
-              </span>
-            </div>
-
-            {/* Giant +1 / -1 Buttons */}
-            <div className="w-full flex items-center gap-2 sm:gap-3 pt-2">
-              <button
-                onClick={() => handleScoreChange(leftSide, -1)}
-                disabled={leftScore === 0}
-                className="flex-1 flex items-center justify-center rounded-2xl bg-slate-800/80 py-4 sm:py-5 text-slate-300 hover:bg-slate-700 active:scale-95 disabled:opacity-30 transition-all"
-              >
-                <Minus className="h-7 w-7 sm:h-8 sm:w-8" />
-              </button>
-              <button
-                onClick={() => handleScoreChange(leftSide, +1)}
-                className="flex-[2] flex items-center justify-center rounded-2xl bg-emerald-600 py-4 sm:py-5 font-black text-white shadow-lg shadow-emerald-600/30 hover:bg-emerald-500 active:scale-95 transition-all text-xl sm:text-2xl"
-              >
-                <Plus className="h-8 w-8 sm:h-9 sm:w-9 mr-1" />
-                <span>+1</span>
-              </button>
-            </div>
-          </div>
-
-          {/* LADO DIREITO */}
-          <div className="flex flex-col items-center justify-between rounded-3xl border border-slate-800 bg-gradient-to-b from-slate-900 to-slate-950 p-4 sm:p-6 shadow-xl relative overflow-hidden">
-            {/* Player Name */}
-            <div className="w-full text-center pb-2">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-400 block mb-0.5">
-                {rightSide === 1 ? "Lado 1" : "Lado 2"} &bull; Sets: {rightSetsWon}
-              </span>
-              <h3 className="text-base sm:text-xl font-black text-white truncate">
-                {rightName}
-              </h3>
-            </div>
-
-            {/* Giant Score Display */}
-            <div className="my-2 sm:my-4 flex items-center justify-center">
-              <span className="font-mono text-7xl sm:text-9xl font-black tracking-tighter text-emerald-400 drop-shadow-[0_0_20px_rgba(16,185,129,0.3)]">
-                {rightScore}
-              </span>
-            </div>
-
-            {/* Giant +1 / -1 Buttons */}
-            <div className="w-full flex items-center gap-2 sm:gap-3 pt-2">
-              <button
-                onClick={() => handleScoreChange(rightSide, -1)}
-                disabled={rightScore === 0}
-                className="flex-1 flex items-center justify-center rounded-2xl bg-slate-800/80 py-4 sm:py-5 text-slate-300 hover:bg-slate-700 active:scale-95 disabled:opacity-30 transition-all"
-              >
-                <Minus className="h-7 w-7 sm:h-8 sm:w-8" />
-              </button>
-              <button
-                onClick={() => handleScoreChange(rightSide, +1)}
-                className="flex-[2] flex items-center justify-center rounded-2xl bg-emerald-600 py-4 sm:py-5 font-black text-white shadow-lg shadow-emerald-600/30 hover:bg-emerald-500 active:scale-95 transition-all text-xl sm:text-2xl"
-              >
-                <Plus className="h-8 w-8 sm:h-9 sm:w-9 mr-1" />
-                <span>+1</span>
-              </button>
-            </div>
-          </div>
+          <PlayerScoreCard
+            sideLabel={leftSide === 1 ? "Lado 1" : "Lado 2"}
+            playerName={leftName}
+            score={leftScore}
+            setsWon={leftSetsWon}
+            onScoreChange={(delta) => handleScoreChange(leftSide, delta)}
+            disabledMinus={leftScore === 0}
+          />
+          <PlayerScoreCard
+            sideLabel={rightSide === 1 ? "Lado 1" : "Lado 2"}
+            playerName={rightName}
+            score={rightScore}
+            setsWon={rightSetsWon}
+            onScoreChange={(delta) => handleScoreChange(rightSide, delta)}
+            disabledMinus={rightScore === 0}
+          />
         </div>
 
         {/* Bottom Control Bar */}

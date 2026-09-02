@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
         pointsPerSet: Number(pointsPerSet) || 18,
         setsToWin: calculatedSetsToWin,
         advantageRule: Boolean(advantageRule),
-        location: location?.trim() || "Quadra Universitária de Futmesa",
+        location: location?.trim() || "Quadra Universitária de MesaMatch",
         startDate: startDate ? new Date(startDate) : new Date(),
         status: "REGISTRATION",
       },

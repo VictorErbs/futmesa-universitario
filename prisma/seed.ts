@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🌱 Iniciando seed do Futmesa Universitário...");
+  console.log("🌱 Iniciando seed do MesaMatch...");
 
   // Clear existing data safely
   await prisma.matchSet.deleteMany();
@@ -12,10 +12,10 @@ async function main() {
   await prisma.tournamentGroup.deleteMany();
   await prisma.tournament.deleteMany();
 
-  // 1. Torneio 1: 1º Torneio Universitário de Futmesa (Duplas - Mata-Mata)
+  // 1. Torneio 1: 1º Torneio Universitário de MesaMatch (Duplas - Mata-Mata)
   const t1 = await prisma.tournament.create({
     data: {
-      title: "1º Torneio Universitário de Futmesa 2026",
+      title: "1º Torneio Universitário de MesaMatch 2026",
       description:
         "Campeonato oficial do projeto de extensão universitária. Duplas mistas, masculinas e femininas disputando o troféu no ginásio.",
       modality: "DOUBLES",
@@ -23,7 +23,7 @@ async function main() {
       pointsPerSet: 18,
       setsToWin: 2,
       advantageRule: true,
-      location: "Mesa de Futmesa - Ginásio Poliesportivo Central",
+      location: "Mesa de MesaMatch - Ginásio Poliesportivo Central",
       startDate: new Date(Date.now() + 86400000),
       status: "IN_PROGRESS",
     },
@@ -35,7 +35,7 @@ async function main() {
       name: "Carlos Eduardo",
       partnerName: "Rafael Santos",
       phone: "(11) 98765-4321",
-      email: "carlos.futmesa@faculdade.edu.br",
+      email: "carlos.MesaMatch@faculdade.edu.br",
       seed: 1,
       tournamentId: t1.id,
       status: "CONFIRMED",
@@ -152,7 +152,7 @@ async function main() {
   // 2. Torneio 2: Desafio Individual X1 Comunitário (Inscrições Abertas)
   const t2 = await prisma.tournament.create({
     data: {
-      title: "Desafio Individual X1 de Futmesa 2026",
+      title: "Desafio Individual X1 de MesaMatch 2026",
       description:
         "Torneio individual dinâmico no formato 1x1, sets até 15 pontos, aberto para toda a comunidade universitária e convidados.",
       modality: "INDIVIDUAL",
