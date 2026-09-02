@@ -403,7 +403,10 @@ export default function TournamentHubPage({
       {activeTab === "bracket" && (
         <BracketTab
           matches={tournament.matches || []}
+          pointsPerSet={tournament.pointsPerSet}
+          setsToWin={tournament.setsToWin}
           onOpenScoreboard={handleOpenScoreboard}
+          onMatchUpdated={fetchTournamentData}
         />
       )}
 

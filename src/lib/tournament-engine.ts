@@ -82,6 +82,16 @@ export function evaluateSetWinner(
 }
 
 /**
+ * Returns the maximum selectable points for a tournament to avoid unrealistic scores
+ * while still allowing ample room for advantage/deuce.
+ */
+export function getMaxPointsForTournament(pointsPerSet: number = 18): number {
+  if (pointsPerSet <= 15) return 25;
+  if (pointsPerSet <= 18) return 30;
+  return 35;
+}
+
+/**
  * Backward-compatible alias
  */
 export function isSetFinished(score1: number, score2: number, pointsPerSet: number = 18) {
@@ -363,31 +373,51 @@ export function generateKnockoutTree(participants: any[]) {
 }
 
 /**
- * Advance winner in knockout bracket tree
+ * Advance winner in knockout bracket tree (supports setting winner or clearing slot if null)
  */
 export function advanceWinnerInBracket(
   matches: EngineMatch[],
   matchId: string,
-  winnerId: string
+  winnerId: string | null
 ): EngineMatch[] {
-  const match = matches.find((m) => m.id === matchId);
-  if (!match) return matches;
+  const currentMatch = matches.find((m) => m.id === matchId);
+  if (!currentMatch) return matches;
 
-  match.winnerId = winnerId;
-  match.status = "FINISHED";
+  const previousWinnerId = currentMatch.winnerId;
 
-  if (match.nextMatchId && match.nextMatchSlot) {
-    const nextMatch = matches.find((m) => m.id === match.nextMatchId);
-    if (nextMatch) {
-      if (match.nextMatchSlot === 1) {
-        nextMatch.participant1Id = winnerId;
-      } else {
-        nextMatch.participant2Id = winnerId;
+  return matches.map((m) => {
+    if (m.id === matchId) {
+      return {
+        ...m,
+        winnerId,
+        status: winnerId ? ("FINISHED" as const) : ("IN_PROGRESS" as const),
+      };
+    }
+
+    if (currentMatch.nextMatchId && m.id === currentMatch.nextMatchId) {
+      if (winnerId) {
+        return {
+          ...m,
+          participant1Id: currentMatch.nextMatchSlot === 1 ? winnerId : m.participant1Id,
+          participant2Id: currentMatch.nextMatchSlot === 2 ? winnerId : m.participant2Id,
+        };
+      } else if (previousWinnerId) {
+        return {
+          ...m,
+          participant1Id:
+            currentMatch.nextMatchSlot === 1 && m.participant1Id === previousWinnerId
+              ? null
+              : m.participant1Id,
+          participant2Id:
+            currentMatch.nextMatchSlot === 2 && m.participant2Id === previousWinnerId
+              ? null
+              : m.participant2Id,
+        };
       }
     }
-  }
 
-  return matches;
+    return m;
+  });
 }
 
 /**
@@ -629,3 +659,4 @@ export function qualifyTopTeamsToKnockout(
 
   return [];
 }
+

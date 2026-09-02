@@ -112,7 +112,7 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
   // Sync to database
   const syncLiveScore = async (score1: number, score2: number) => {
     try {
-      await fetch(`/api/partidas/${match.id}/live`, {
+      const res = await fetch(`/api/partidas/${match.id}/live`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -121,6 +121,16 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
           score2,
         }),
       });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.evaluation?.isFinished) {
+          fireConfetti();
+        }
+        if (onMatchUpdated) {
+          onMatchUpdated();
+        }
+      }
     } catch {
       // quiet live ping
     }

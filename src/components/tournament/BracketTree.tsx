@@ -1,20 +1,61 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { MatchType } from "@/types/tournament";
-import { Trophy, PlayCircle, Crown, Award } from "lucide-react";
+import { Trophy, PlayCircle, Crown, Award, Loader2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getRoundDisplayName } from "@/lib/tournament-engine";
+import { getRoundDisplayName, getMaxPointsForTournament } from "@/lib/tournament-engine";
 
 interface BracketTreeProps {
   matches: MatchType[];
+  pointsPerSet?: number;
+  setsToWin?: number;
   onOpenScoreboard?: (match: MatchType) => void;
+  onMatchUpdated?: () => Promise<void> | void;
 }
 
 export const BracketTree: React.FC<BracketTreeProps> = ({
   matches,
+  pointsPerSet = 18,
+  setsToWin = 2,
   onOpenScoreboard,
+  onMatchUpdated,
 }) => {
+  const [updatingMatchId, setUpdatingMatchId] = useState<string | null>(null);
+  const maxPoints = getMaxPointsForTournament(pointsPerSet);
+
+  const handleDirectScoreChange = async (
+    match: MatchType,
+    setNumber: number,
+    newScore1: number,
+    newScore2: number
+  ) => {
+    try {
+      setUpdatingMatchId(match.id);
+      const res = await fetch(`/api/partidas/${match.id}/resultado`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          setNumber,
+          score1: newScore1,
+          score2: newScore2,
+        }),
+      });
+
+      if (res.ok) {
+        if (onMatchUpdated) {
+          await onMatchUpdated();
+        }
+      } else {
+        const err = await res.json();
+        console.error("Erro ao atualizar placar no banco:", err);
+      }
+    } catch (error) {
+      console.error("Falha ao atualizar placar:", error);
+    } finally {
+      setUpdatingMatchId(null);
+    }
+  };
   // Filter only playoff/knockout matches (exclude group-only matches if any)
   const knockoutMatches = matches
     .filter((m) => !m.groupId && (!m.stage || m.stage !== "GROUPS"))
@@ -76,6 +117,21 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
           </p>
         </div>
       )}
+
+      {/* Live Bracket Interactive Info Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-collegiate-surface/80 border border-collegiate-border text-xs text-emerald-100/90 shadow-sm">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-amber-400 shrink-0" />
+          <span>
+            Selecione a pontuação diretamente nos cards para atualizar na hora e avançar o vencedor para a final.
+          </span>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 font-mono">
+          <span className="bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-lg text-[11px] font-bold">
+            Limite Máximo: {maxPoints} pts
+          </span>
+        </div>
+      </div>
 
       {/* Horizontal Bracket Tree Container */}
       <div className="w-full overflow-x-auto pb-8 pt-2">
@@ -143,6 +199,11 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
                       match.status === "FINALIZADA" || match.status === "FINISHED";
                     const isBye = match.status === "BYE";
 
+                    const displaySets =
+                      match.sets && match.sets.length > 0
+                        ? match.sets
+                        : [{ id: "temp-1", setNumber: 1, score1: 0, score2: 0, isFinished: false }];
+
                     return (
                       <div
                         key={match.id}
@@ -169,22 +230,25 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
                             <span>{match.court || `Jogo #${match.matchNumber || 1}`}</span>
                           </span>
 
-                          {isLive && (
+                          {updatingMatchId === match.id ? (
+                            <span className="inline-flex items-center gap-1 font-bold text-[10px] text-amber-400 animate-pulse">
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                              <span>Salvando...</span>
+                            </span>
+                          ) : isLive ? (
                             <span className="inline-flex items-center gap-1 font-black text-[10px] text-emerald-400 uppercase tracking-widest animate-pulse-live">
                               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
                               Ao Vivo
                             </span>
-                          )}
-                          {isFinished && (
+                          ) : isFinished ? (
                             <span className="text-[10px] font-bold text-emerald-300/80">
                               Finalizado
                             </span>
-                          )}
-                          {isBye && (
+                          ) : isBye ? (
                             <span className="text-[10px] font-bold text-amber-400">
                               BYE (Avanço Automático)
                             </span>
-                          )}
+                          ) : null}
                         </div>
 
                         {/* Team 1 Row */}
@@ -211,8 +275,40 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
                           </div>
 
                           {/* Scores per set */}
-                          <div className="flex items-center gap-1 font-mono font-bold shrink-0">
-                            {match.sets && match.sets.length > 0 ? (
+                          <div className="flex items-center gap-1.5 font-mono font-bold shrink-0">
+                            {p1 && p2 && !isBye ? (
+                              displaySets.map((s, idx) => {
+                                const isLeading = s.score1 > s.score2;
+                                const currentSetNum = s.setNumber || idx + 1;
+                                return (
+                                  <select
+                                    key={s.id || idx}
+                                    aria-label={`Pontos de ${p1Name} (Set ${currentSetNum})`}
+                                    value={s.score1}
+                                    disabled={updatingMatchId === match.id}
+                                    onChange={(e) => {
+                                      e.stopPropagation();
+                                      const val = Number(e.target.value);
+                                      handleDirectScoreChange(match, currentSetNum, val, s.score2);
+                                    }}
+                                    className={cn(
+                                      "h-7 w-11 rounded-md text-center font-mono font-black text-xs tabular-nums border transition-all cursor-pointer appearance-none",
+                                      isLeading
+                                        ? "bg-amber-400 text-collegiate-dark border-amber-300 shadow-sm"
+                                        : "bg-collegiate-dark text-emerald-200 border-collegiate-border hover:border-amber-400/60 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400",
+                                      updatingMatchId === match.id && "opacity-50 pointer-events-none"
+                                    )}
+                                    title={`Alterar pontos de ${p1Name} (Máx: ${maxPoints})`}
+                                  >
+                                    {Array.from({ length: maxPoints + 1 }, (_, i) => (
+                                      <option key={i} value={i} className="bg-collegiate-dark text-white font-mono">
+                                        {i}
+                                      </option>
+                                    ))}
+                                  </select>
+                                );
+                              })
+                            ) : match.sets && match.sets.length > 0 ? (
                               match.sets.map((s, idx) => (
                                 <span
                                   key={s.id || idx}
@@ -256,8 +352,40 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
                           </div>
 
                           {/* Scores per set */}
-                          <div className="flex items-center gap-1 font-mono font-bold shrink-0">
-                            {match.sets && match.sets.length > 0 ? (
+                          <div className="flex items-center gap-1.5 font-mono font-bold shrink-0">
+                            {p1 && p2 && !isBye ? (
+                              displaySets.map((s, idx) => {
+                                const isLeading = s.score2 > s.score1;
+                                const currentSetNum = s.setNumber || idx + 1;
+                                return (
+                                  <select
+                                    key={s.id || idx}
+                                    aria-label={`Pontos de ${p2Name} (Set ${currentSetNum})`}
+                                    value={s.score2}
+                                    disabled={updatingMatchId === match.id}
+                                    onChange={(e) => {
+                                      e.stopPropagation();
+                                      const val = Number(e.target.value);
+                                      handleDirectScoreChange(match, currentSetNum, s.score1, val);
+                                    }}
+                                    className={cn(
+                                      "h-7 w-11 rounded-md text-center font-mono font-black text-xs tabular-nums border transition-all cursor-pointer appearance-none",
+                                      isLeading
+                                        ? "bg-amber-400 text-collegiate-dark border-amber-300 shadow-sm"
+                                        : "bg-collegiate-dark text-emerald-200 border-collegiate-border hover:border-amber-400/60 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400",
+                                      updatingMatchId === match.id && "opacity-50 pointer-events-none"
+                                    )}
+                                    title={`Alterar pontos de ${p2Name} (Máx: ${maxPoints})`}
+                                  >
+                                    {Array.from({ length: maxPoints + 1 }, (_, i) => (
+                                      <option key={i} value={i} className="bg-collegiate-dark text-white font-mono">
+                                        {i}
+                                      </option>
+                                    ))}
+                                  </select>
+                                );
+                              })
+                            ) : match.sets && match.sets.length > 0 ? (
                               match.sets.map((s, idx) => (
                                 <span
                                   key={s.id || idx}

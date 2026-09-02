@@ -5,12 +5,18 @@ import { BracketTree } from "@/components/tournament/BracketTree";
 
 interface BracketTabProps {
   matches: MatchType[];
+  pointsPerSet?: number;
+  setsToWin?: number;
   onOpenScoreboard: (match: MatchType) => void;
+  onMatchUpdated?: () => Promise<void> | void;
 }
 
 export const BracketTab: React.FC<BracketTabProps> = ({
   matches,
+  pointsPerSet = 18,
+  setsToWin = 2,
   onOpenScoreboard,
+  onMatchUpdated,
 }) => {
   return (
     <div className="space-y-4">
@@ -23,7 +29,10 @@ export const BracketTab: React.FC<BracketTabProps> = ({
 
       <BracketTree
         matches={matches}
+        pointsPerSet={pointsPerSet}
+        setsToWin={setsToWin}
         onOpenScoreboard={onOpenScoreboard}
+        onMatchUpdated={onMatchUpdated}
       />
     </div>
   );

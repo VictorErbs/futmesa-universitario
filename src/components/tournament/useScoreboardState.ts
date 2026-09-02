@@ -1,6 +1,6 @@
 import { useReducer, useEffect } from "react";
 import { MatchType } from "@/types/tournament";
-import { isSetFinished, evaluateMatchWinner } from "@/lib/tournament-engine";
+import { isSetFinished, evaluateMatchWinner, getMaxPointsForTournament } from "@/lib/tournament-engine";
 
 export interface SetScore {
   score1: number;
@@ -65,11 +65,12 @@ function scoreboardReducer(state: ScoreboardState, action: ScoreboardAction): Sc
 
       const nextSets = [...state.sets];
       const s = { ...nextSets[state.currentSetIndex] };
+      const maxPoints = getMaxPointsForTournament(pointsPerSet);
 
       if (side === 1) {
-        s.score1 = Math.max(0, s.score1 + delta);
+        s.score1 = Math.min(maxPoints, Math.max(0, s.score1 + delta));
       } else {
-        s.score2 = Math.max(0, s.score2 + delta);
+        s.score2 = Math.min(maxPoints, Math.max(0, s.score2 + delta));
       }
 
       const check = isSetFinished(s.score1, s.score2, pointsPerSet);

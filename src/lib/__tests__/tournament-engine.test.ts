@@ -6,11 +6,21 @@ import {
   generateGroupsAndRoundRobin,
   calculateGroupStandings,
   qualifyTopTeamsToKnockout,
+  getBracketSeedOrder,
+  getMaxPointsForTournament,
   advanceWinnerInBracket,
-  getBracketSeedOrder
 } from '../tournament-engine'
 
 describe('Tournament Engine', () => {
+  describe('getMaxPointsForTournament', () => {
+    it('returns appropriate maximum points based on tournament points per set', () => {
+      expect(getMaxPointsForTournament(15)).toBe(25)
+      expect(getMaxPointsForTournament(18)).toBe(30)
+      expect(getMaxPointsForTournament(21)).toBe(35)
+      expect(getMaxPointsForTournament(12)).toBe(25)
+    })
+  })
+
   describe('evaluateSetWinner', () => {
     it('finishes set when reaching target points with 2-point difference (advantageRule = true)', () => {
       // 18x16 finishes with winner 1
@@ -511,6 +521,15 @@ describe('Tournament Engine', () => {
       expect(updatedSemi.status).toBe('FINISHED')
       expect(updatedFinal.participant1Id).toBe('team-1')
       expect(updatedFinal.participant2Id).toBeNull()
+
+      // When winner is cleared (e.g., score reduced)
+      const cleared = advanceWinnerInBracket(updated, 'semi-1', null)
+      const clearedSemi = cleared.find((m) => m.id === 'semi-1')!
+      const clearedFinal = cleared.find((m) => m.id === 'final-1')!
+
+      expect(clearedSemi.winnerId).toBeNull()
+      expect(clearedSemi.status).toBe('IN_PROGRESS')
+      expect(clearedFinal.participant1Id).toBeNull()
     })
   })
 })
