@@ -39,8 +39,8 @@ export const PlayerScoreCard: React.FC<PlayerScoreCardProps> = ({
       />
 
       {/* Header with Side Label and Sets Counters */}
-      <div className="w-full text-center pb-2 z-10">
-        <div className="flex items-center justify-between px-1 mb-1.5">
+      <div className="w-full text-center pb-1 sm:pb-2 z-10">
+        <div className="flex items-center justify-between px-1 mb-1">
           <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-300/80">
             {sideLabel}
           </span>
@@ -52,7 +52,7 @@ export const PlayerScoreCard: React.FC<PlayerScoreCardProps> = ({
               <span
                 key={dotIdx}
                 className={cn(
-                  "h-2.5 w-2.5 rounded-full border transition-all",
+                  "h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full border transition-all",
                   dotIdx < setsWon
                     ? "bg-amber-400 border-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.8)] scale-110"
                     : "bg-collegiate-dark/80 border-collegiate-border"
@@ -62,18 +62,18 @@ export const PlayerScoreCard: React.FC<PlayerScoreCardProps> = ({
           </div>
         </div>
 
-        <h3 className="text-base sm:text-xl font-black text-white truncate tracking-tight">
+        <h3 className="text-sm sm:text-lg md:text-xl font-black text-white truncate tracking-tight">
           {playerName || "A Definir"}
         </h3>
       </div>
 
       {/* Giant LED Score Display */}
-      <div className="my-2 sm:my-5 flex flex-col items-center justify-center z-10 select-none">
+      <div className="my-1 sm:my-2.5 flex flex-col items-center justify-center z-10 select-none">
         <div className="relative">
           <span
             key={score}
             className={cn(
-              "font-mono text-7xl sm:text-9xl font-black tracking-tighter tabular-nums block animate-score-pop transition-colors",
+              "font-mono text-6xl sm:text-7xl md:text-8xl font-black tracking-tighter tabular-nums block animate-score-pop transition-colors leading-none",
               isInLead
                 ? "text-amber-400 drop-shadow-[0_0_30px_rgba(245,158,11,0.4)]"
                 : "text-emerald-400 drop-shadow-[0_0_25px_rgba(16,185,129,0.35)]"
@@ -85,15 +85,15 @@ export const PlayerScoreCard: React.FC<PlayerScoreCardProps> = ({
       </div>
 
       {/* Giant Touch Buttons */}
-      <div className="w-full flex items-center gap-2 sm:gap-3 pt-2 z-10">
+      <div className="w-full flex items-center gap-2 sm:gap-3 pt-1 sm:pt-2 z-10">
         <button
           type="button"
           onClick={() => onScoreChange(-1)}
           disabled={disabledMinus}
           aria-label="Diminuir ponto"
-          className="flex-1 flex items-center justify-center rounded-2xl border border-collegiate-border bg-collegiate-dark/90 py-3.5 sm:py-5 text-emerald-200/70 hover:text-white hover:bg-collegiate-surface active:scale-95 disabled:opacity-20 disabled:pointer-events-none transition-all shadow-md"
+          className="flex-1 flex items-center justify-center rounded-2xl border border-collegiate-border bg-collegiate-dark/90 py-2.5 sm:py-3.5 text-emerald-200/70 hover:text-white hover:bg-collegiate-surface active:scale-95 disabled:opacity-35 disabled:pointer-events-none transition-all shadow-md"
         >
-          <Minus className="h-6 w-6 sm:h-7 sm:w-7" />
+          <Minus className="h-5 w-5 sm:h-6 sm:w-6" />
         </button>
 
         <button
@@ -101,14 +101,14 @@ export const PlayerScoreCard: React.FC<PlayerScoreCardProps> = ({
           onClick={() => onScoreChange(+1)}
           aria-label="Aumentar ponto"
           className={cn(
-            "flex-[2.2] flex items-center justify-center rounded-2xl py-3.5 sm:py-5 font-black text-collegiate-dark active:scale-95 transition-all text-xl sm:text-2xl border shadow-xl",
+            "flex-[2.2] flex items-center justify-center rounded-2xl py-2.5 sm:py-3.5 font-black text-collegiate-dark active:scale-95 transition-all text-lg sm:text-xl border shadow-xl",
             isInLead
               ? "bg-amber-400 hover:bg-amber-300 border-amber-300 shadow-amber-900/40"
               : "bg-emerald-400 hover:bg-emerald-300 border-emerald-300 shadow-emerald-950/50"
           )}
         >
-          <Plus className="h-7 w-7 sm:h-8 sm:w-8 mr-1 stroke-[3]" />
-          <span className="font-extrabold tracking-wide">+1</span>
+          <Plus className="h-5 w-5 sm:h-6 sm:w-6 mr-1 stroke-[3]" />
+          <span className="font-extrabold tracking-wide">1</span>
         </button>
       </div>
     </div>

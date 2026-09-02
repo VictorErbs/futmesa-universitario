@@ -176,162 +176,164 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
   const rightSetsWon = rightSide === 1 ? matchEvaluation.setsWonP1 : matchEvaluation.setsWonP2;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-2 sm:p-4 overflow-y-auto">
-      <div className="relative w-full max-w-4xl rounded-3xl border border-collegiate-border bg-collegiate-dark/95 arena-grid-pattern p-4 sm:p-7 shadow-2xl flex flex-col justify-between max-h-[96vh]">
-        {/* Top Bar */}
-        <div className="flex items-center justify-between border-b border-collegiate-border/80 pb-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 font-bold border border-amber-500/30 shadow-md">
-              <Trophy className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-black text-white tracking-tight">
-                  Mesa de Arbitragem Oficial
-                </h2>
-                <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-black text-emerald-400 border border-emerald-500/30 tracking-wider uppercase">
-                  {match.court || "Mesa Central"}
-                </span>
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-md p-2 sm:p-4">
+      <div className="flex min-h-full items-center justify-center py-2">
+        <div className="relative w-full max-w-4xl rounded-3xl border border-collegiate-border bg-collegiate-dark/95 arena-grid-pattern p-4 sm:p-6 shadow-2xl flex flex-col justify-between my-auto">
+          {/* Top Bar */}
+          <div className="flex items-center justify-between border-b border-collegiate-border/80 pb-3 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 font-bold border border-amber-500/30 shadow-md">
+                <Trophy className="h-5 w-5" />
               </div>
-              <p className="text-xs text-emerald-200/70">
-                {match.roundName || "Mata-mata"} &bull; Regra Oficial: {pointsPerSet} pts (Diferença de 2)
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={onClose}
-            className="rounded-full p-2 text-emerald-200/60 hover:bg-collegiate-surface hover:text-white transition-colors"
-          >
-            <X className="h-6 w-6" />
-          </button>
-        </div>
-
-        {/* Set Selector Tabs */}
-        <div className="my-3.5 flex items-center justify-between gap-2 overflow-x-auto py-1">
-          <div className="flex items-center gap-2">
-            {sets.map((s, idx) => {
-              const isCurr = idx === currentSetIndex;
-              return (
-                <button
-                  key={idx}
-                  onClick={() => dispatch({ type: "SET_CURRENT_SET", index: idx })}
-                  className={cn(
-                    "flex items-center gap-2 rounded-xl px-3.5 sm:px-4 py-2 text-xs font-extrabold transition-all border",
-                    isCurr
-                      ? "bg-amber-400 text-collegiate-dark border-amber-300 shadow-md shadow-amber-500/30 scale-105"
-                      : "bg-collegiate-surface/90 text-emerald-100/70 border-collegiate-border hover:border-amber-400/40 hover:text-white"
-                  )}
-                >
-                  <span className="tracking-wide">SET {idx + 1}</span>
-                  <span className="font-mono text-[11px] opacity-90 font-black">
-                    ({s.score1} - {s.score2})
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base sm:text-lg font-black text-white tracking-tight">
+                    Mesa de Arbitragem Oficial
+                  </h2>
+                  <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-black text-emerald-400 border border-emerald-500/30 tracking-wider uppercase">
+                    {match.court || "Mesa Central"}
                   </span>
-                  {s.isFinished && <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Quick Actions: Inverter lados, Desfazer */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => dispatch({ type: "TOGGLE_SWAP" })}
-              title="Inverter Lados da Mesa"
-              className="flex items-center gap-1.5 rounded-xl border border-collegiate-border bg-collegiate-surface/90 px-3 py-2 text-xs font-bold text-emerald-100/90 hover:bg-collegiate-surfaceHover hover:border-amber-400/50 transition-colors shadow-sm"
-            >
-              <ArrowLeftRight className="h-3.5 w-3.5 text-amber-400" />
-              <span className="hidden sm:inline">Inverter Lados</span>
-            </button>
-            <button
-              onClick={handleUndo}
-              disabled={history.length === 0}
-              title="Desfazer último ponto"
-              className="flex items-center gap-1.5 rounded-xl border border-collegiate-border bg-collegiate-surface/90 px-3 py-2 text-xs font-bold text-emerald-100/90 hover:bg-collegiate-surfaceHover hover:border-amber-400/50 disabled:opacity-30 disabled:pointer-events-none transition-colors shadow-sm"
-            >
-              <RotateCcw className="h-3.5 w-3.5 text-amber-400" />
-              <span className="hidden sm:inline">Desfazer Ponto</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Live Status Pill (Deuce / Set Point / Status) */}
-        <div className="mb-3 flex items-center justify-center">
-          <div
-            className={cn(
-              "inline-flex items-center gap-2 rounded-full px-5 py-1.5 text-xs sm:text-sm font-black tracking-wide transition-all shadow-lg",
-              scoreState.isDeuce
-                ? "bg-amber-500/20 text-amber-300 border-2 border-amber-400 animate-pulse-tension"
-                : scoreState.advantage
-                ? "bg-emerald-500/25 text-emerald-300 border border-emerald-400 pitch-glow-intense animate-pulse-live"
-                : "bg-collegiate-surface text-emerald-200/90 border border-collegiate-border"
-            )}
-          >
-            <Flame className={cn("h-4 w-4", scoreState.isDeuce ? "text-amber-400 animate-bounce" : "text-emerald-400")} />
-            <span className="uppercase">{scoreState.statusText}</span>
-          </div>
-        </div>
-
-        {/* Main Big Scoreboard Grid */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-6 my-auto">
-          <PlayerScoreCard
-            sideLabel={leftSide === 1 ? "Lado 1" : "Lado 2"}
-            playerName={leftName}
-            score={leftScore}
-            setsWon={leftSetsWon ?? 0}
-            onScoreChange={(delta) => handleScoreChange(leftSide, delta)}
-            disabledMinus={leftScore === 0}
-            isInLead={leftScore > rightScore}
-          />
-          <PlayerScoreCard
-            sideLabel={rightSide === 1 ? "Lado 1" : "Lado 2"}
-            playerName={rightName}
-            score={rightScore}
-            setsWon={rightSetsWon ?? 0}
-            onScoreChange={(delta) => handleScoreChange(rightSide, delta)}
-            disabledMinus={rightScore === 0}
-            isInLead={rightScore > leftScore}
-          />
-        </div>
-
-        {/* Bottom Control Bar */}
-        <div className="mt-4 pt-3 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
-          {/* Match finished indicator or message */}
-          <div>
-            {saveMessage && (
-              <span className="text-xs font-semibold text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-3 py-1 rounded-lg">
-                {saveMessage}
-              </span>
-            )}
-            {matchEvaluation.isFinished && (
-              <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
-                <Trophy className="h-4 w-4" />
-                <span>
-                  Vitória de:{" "}
-                  {matchEvaluation.winnerSlot === 1 ? p1DisplayName : p2DisplayName}
-                </span>
+                </div>
+                <p className="text-xs text-emerald-200/70">
+                  {match.roundName || "Mata-mata"} &bull; Regra Oficial: {pointsPerSet} pts (Diferença de 2)
+                </p>
               </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            {setEvaluation.finished && !currentSet.isFinished && (
-              <button
-                onClick={handleFinishSet}
-                className="flex-1 sm:flex-initial rounded-xl bg-amber-500 px-4 py-2.5 text-xs sm:text-sm font-bold text-amber-950 hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20"
-              >
-                Confirmar Fim do Set {currentSetIndex + 1}
-              </button>
-            )}
+            </div>
 
             <button
-              onClick={handleSaveAndFinalize}
-              disabled={isSaving}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-600/30 hover:bg-emerald-500 active:scale-95 disabled:opacity-50 transition-all"
+              onClick={onClose}
+              className="rounded-full p-2 text-emerald-200/60 hover:bg-collegiate-surface hover:text-white transition-colors"
             >
-              <CheckCircle className="h-4 w-4" />
-              <span>{isSaving ? "Salvando..." : "Salvar & Encerrar Partida"}</span>
+              <X className="h-6 w-6" />
             </button>
+          </div>
+
+          {/* Set Selector Tabs */}
+          <div className="my-3 flex items-center justify-between gap-2 overflow-x-auto py-1 shrink-0 no-scrollbar">
+            <div className="flex items-center gap-2 shrink-0">
+              {sets.map((s, idx) => {
+                const isCurr = idx === currentSetIndex;
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => dispatch({ type: "SET_CURRENT_SET", index: idx })}
+                    className={cn(
+                      "flex items-center gap-2 rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-extrabold transition-all border whitespace-nowrap shrink-0",
+                      isCurr
+                        ? "bg-amber-400 text-collegiate-dark border-amber-300 shadow-md shadow-amber-500/30"
+                        : "bg-collegiate-surface/90 text-emerald-100/70 border-collegiate-border hover:border-amber-400/40 hover:text-white"
+                    )}
+                  >
+                    <span className="tracking-wide">SET {idx + 1}</span>
+                    <span className="font-mono text-[11px] opacity-90 font-black">
+                      ({s.score1} - {s.score2})
+                    </span>
+                    {s.isFinished && <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Quick Actions: Inverter lados, Desfazer */}
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => dispatch({ type: "TOGGLE_SWAP" })}
+                title="Inverter Lados da Mesa"
+                className="flex items-center gap-1.5 rounded-xl border border-collegiate-border bg-collegiate-surface/90 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-bold text-emerald-100/90 hover:bg-collegiate-surfaceHover hover:border-amber-400/50 transition-colors shadow-sm whitespace-nowrap shrink-0"
+              >
+                <ArrowLeftRight className="h-3.5 w-3.5 text-amber-400" />
+                <span className="hidden sm:inline">Inverter Lados</span>
+              </button>
+              <button
+                onClick={handleUndo}
+                disabled={history.length === 0}
+                title="Desfazer último ponto"
+                className="flex items-center gap-1.5 rounded-xl border border-collegiate-border bg-collegiate-surface/90 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-bold text-emerald-100/90 hover:bg-collegiate-surfaceHover hover:border-amber-400/50 disabled:opacity-30 disabled:pointer-events-none transition-colors shadow-sm whitespace-nowrap shrink-0"
+              >
+                <RotateCcw className="h-3.5 w-3.5 text-amber-400" />
+                <span className="hidden sm:inline">Desfazer Ponto</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Live Status Pill (Deuce / Set Point / Status) */}
+          <div className="mb-2 sm:mb-3 flex items-center justify-center shrink-0">
+            <div
+              className={cn(
+                "inline-flex items-center gap-2 rounded-full px-4 sm:px-5 py-1 sm:py-1.5 text-xs sm:text-sm font-black tracking-wide transition-all shadow-lg",
+                scoreState.isDeuce
+                  ? "bg-amber-500/20 text-amber-300 border-2 border-amber-400 animate-pulse-tension"
+                  : scoreState.advantage
+                  ? "bg-emerald-500/25 text-emerald-300 border border-emerald-400 pitch-glow-intense animate-pulse-live"
+                  : "bg-collegiate-surface text-emerald-200/90 border border-collegiate-border"
+              )}
+            >
+              <Flame className={cn("h-4 w-4", scoreState.isDeuce ? "text-amber-400 animate-bounce" : "text-emerald-400")} />
+              <span className="uppercase">{scoreState.statusText}</span>
+            </div>
+          </div>
+
+          {/* Main Big Scoreboard Grid */}
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 my-2 sm:my-auto">
+            <PlayerScoreCard
+              sideLabel={leftSide === 1 ? "Lado 1" : "Lado 2"}
+              playerName={leftName}
+              score={leftScore}
+              setsWon={leftSetsWon ?? 0}
+              onScoreChange={(delta) => handleScoreChange(leftSide, delta)}
+              disabledMinus={leftScore === 0}
+              isInLead={leftScore > rightScore}
+            />
+            <PlayerScoreCard
+              sideLabel={rightSide === 1 ? "Lado 1" : "Lado 2"}
+              playerName={rightName}
+              score={rightScore}
+              setsWon={rightSetsWon ?? 0}
+              onScoreChange={(delta) => handleScoreChange(rightSide, delta)}
+              disabledMinus={rightScore === 0}
+              isInLead={rightScore > leftScore}
+            />
+          </div>
+
+          {/* Bottom Control Bar */}
+          <div className="mt-3 sm:mt-4 pt-3 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-2.5 shrink-0">
+            {/* Match finished indicator or message */}
+            <div>
+              {saveMessage && (
+                <span className="text-xs font-semibold text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-3 py-1 rounded-lg">
+                  {saveMessage}
+                </span>
+              )}
+              {matchEvaluation.isFinished && (
+                <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                  <Trophy className="h-4 w-4" />
+                  <span>
+                    Vitória de:{" "}
+                    {matchEvaluation.winnerSlot === 1 ? p1DisplayName : p2DisplayName}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              {setEvaluation.finished && !currentSet.isFinished && (
+                <button
+                  onClick={handleFinishSet}
+                  className="flex-1 sm:flex-initial rounded-xl bg-amber-500 px-4 py-2 text-xs sm:text-sm font-bold text-amber-950 hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20 whitespace-nowrap"
+                >
+                  Confirmar Fim do Set {currentSetIndex + 1}
+                </button>
+              )}
+
+              <button
+                onClick={handleSaveAndFinalize}
+                disabled={isSaving}
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-600/30 hover:bg-emerald-500 active:scale-95 disabled:opacity-50 transition-all whitespace-nowrap"
+              >
+                <CheckCircle className="h-4 w-4" />
+                <span>{isSaving ? "Salvando..." : "Salvar & Encerrar Partida"}</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

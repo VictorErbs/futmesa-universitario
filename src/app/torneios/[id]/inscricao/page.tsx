@@ -525,7 +525,7 @@ export default function InscricaoPublicaPage({
                   placeholder="Ex: Carlos Silva"
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                  className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-2.5 text-base sm:text-sm text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
                 />
               </div>
 
@@ -543,7 +543,7 @@ export default function InscricaoPublicaPage({
                   placeholder="Ex: Carlinhos"
                   value={formData.nickname}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-3 py-2.5 text-base sm:text-sm text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none"
                 />
               </div>
             </div>
@@ -566,7 +566,7 @@ export default function InscricaoPublicaPage({
                     placeholder="Ex: Rafael Santos"
                     value={formData.partnerName}
                     onChange={handleChange}
-                    className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-2.5 text-base sm:text-sm text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
                   />
                 </div>
 
@@ -584,7 +584,7 @@ export default function InscricaoPublicaPage({
                     placeholder="Ex: Rafinha"
                     value={formData.partnerNickname}
                     onChange={handleChange}
-                    className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none"
+                    className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-3 py-2.5 text-base sm:text-sm text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none"
                   />
                 </div>
               </div>
@@ -605,7 +605,7 @@ export default function InscricaoPublicaPage({
                   name="neighborhood"
                   value={formData.neighborhood}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-3 py-2.5 text-sm text-white focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-3 py-2.5 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none"
                 >
                   {BAIRROS_OLINDA.map((b) => (
                     <option key={b} value={b}>
@@ -631,7 +631,7 @@ export default function InscricaoPublicaPage({
                   placeholder="Ex: Arena Rio Doce ou Futmesa da Vila"
                   value={formData.communityOrProject}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none"
+                  className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-2.5 text-base sm:text-sm text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none"
                 />
               </div>
             </div>
@@ -653,7 +653,7 @@ export default function InscricaoPublicaPage({
                 placeholder="(81) 90000-0000"
                 value={formData.phone}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-2.5 text-base sm:text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
               />
               <p className="text-[11px] text-emerald-200/60">
                 🔒 Um código de 6 dígitos será enviado para confirmar este número antes de garantir a vaga.
@@ -676,7 +676,7 @@ export default function InscricaoPublicaPage({
                 placeholder="seuemail@exemplo.com"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none"
+                className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-2.5 text-base sm:text-sm text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none"
               />
             </div>
 

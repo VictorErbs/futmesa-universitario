@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
@@ -8,6 +8,13 @@ const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
 });
+
+export const viewport: Viewport = {
+  themeColor: "#081a14",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 export const metadata: Metadata = {
   title: "MesaMatch | Gestão de Torneios & Placar ao Vivo",

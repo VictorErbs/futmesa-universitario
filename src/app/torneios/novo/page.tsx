@@ -132,7 +132,7 @@ export default function NovoTorneioPage() {
               placeholder="Ex: 1º Torneio Universitário de MesaMatch 2026"
               value={formData.title}
               onChange={handleChange}
-              className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+              className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-3 text-base sm:text-sm text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
             />
           </div>
 
@@ -151,7 +151,7 @@ export default function NovoTorneioPage() {
                 name="community"
                 value={formData.community}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-3 text-sm text-white focus:border-amber-400 focus:outline-none"
+                className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none"
               >
                 {BAIRROS_OLINDA.map((b) => (
                   <option key={b} value={b}>
@@ -176,7 +176,7 @@ export default function NovoTorneioPage() {
                 placeholder="Ex: Orla de Rio Doce ou Praça do Fortim"
                 value={formData.location}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-3 text-sm text-white focus:border-amber-400 focus:outline-none"
+                className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none"
               />
             </div>
           </div>
@@ -216,7 +216,7 @@ export default function NovoTorneioPage() {
                 name="modality"
                 value={formData.modality}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-3 text-sm text-white focus:border-amber-400 focus:outline-none"
+                className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none"
               >
                 <option value="DUPLAS">2x2 - Duplas (Padrão das Praças)</option>
                 <option value="INDIVIDUAL">1x1 - Individual (X1 de Mesa)</option>
@@ -237,7 +237,7 @@ export default function NovoTorneioPage() {
                 name="format"
                 value={formData.format}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-3 text-sm text-white focus:border-amber-400 focus:outline-none"
+                className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none"
               >
                 <option value="MATA_MATA">Mata-Mata (Eliminatória Direta)</option>
                 <option value="GRUPOS_E_MATA_MATA">
@@ -262,7 +262,7 @@ export default function NovoTorneioPage() {
                 name="pointsPerSet"
                 value={formData.pointsPerSet}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-3 text-sm text-white focus:border-amber-400 focus:outline-none"
+                className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none"
               >
                 <option value={15}>15 Pontos (Diferença de 2)</option>
                 <option value={18}>18 Pontos (Padrão MesaMatch)</option>
@@ -283,7 +283,7 @@ export default function NovoTorneioPage() {
                 name="maxSets"
                 value={formData.maxSets}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-3 text-sm text-white focus:border-amber-400 focus:outline-none"
+                className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none"
               >
                 <option value={1}>Set Único (Recomendado para torneios de 1 dia)</option>
                 <option value={3}>Melhor de 3 Sets (Vence quem fizer 2)</option>
@@ -308,7 +308,7 @@ export default function NovoTorneioPage() {
               placeholder="Informações sobre premiação, troféus comunitários, regras de convivência..."
               value={formData.description}
               onChange={handleChange}
-              className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none"
+              className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-3 text-base sm:text-sm text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none"
             />
           </div>
 
@@ -327,7 +327,7 @@ export default function NovoTorneioPage() {
               name="startDate"
               value={formData.startDate}
               onChange={handleChange}
-              className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-3 text-sm text-white focus:border-amber-400 focus:outline-none"
+              className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-3 text-base sm:text-sm text-white focus:border-amber-400 focus:outline-none"
             />
           </div>
 
