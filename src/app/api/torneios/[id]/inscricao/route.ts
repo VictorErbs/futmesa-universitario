@@ -13,7 +13,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     // Extrai o corpo da requisição JSON
     const body = await req.json();
     // Obtém os dados do participante
-    const { name, nickname, neighborhood, communityOrProject } = body;
+    const { name, nickname, neighborhood, communityOrProject, phone } = body;
 
     if (!name || name.trim() === "") {
       return NextResponse.json(
@@ -54,6 +54,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         nickname: nickname?.trim() || null,
         neighborhood: neighborhood?.trim() || null,
         communityOrProject: communityOrProject?.trim() || null,
+        phone: phone?.trim() || null,
         seed: currentCount + 1,
         tournamentId: id,
       },

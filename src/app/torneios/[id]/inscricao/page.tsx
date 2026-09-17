@@ -18,11 +18,7 @@ import {
   Sparkles,
   MessageCircle,
   Shield,
-  KeyRound,
-  Smartphone,
   CheckCircle2,
-  RefreshCw,
-  Edit3,
 } from "lucide-react";
 import { TournamentType } from "@/types/tournament";
 import { formatDateShort } from "@/lib/utils";
@@ -31,7 +27,7 @@ import {
   generateRegistrationShareWhatsApp,
 } from "@/lib/olinda";
 
-type RegistrationStep = "FORM" | "VERIFY" | "SUCCESS";
+type RegistrationStep = "FORM" | "SUCCESS";
 
 export default function InscricaoPublicaPage({
   params,
@@ -45,16 +41,10 @@ export default function InscricaoPublicaPage({
   const [tournament, setTournament] = useState<TournamentType | null>(null);
   const [loadingTournament, setLoadingTournament] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [verifyError, setVerifyError] = useState<string | null>(null);
-  const [resendSuccess, setResendSuccess] = useState(false);
 
   // Estado das etapas (stepper)
   const [step, setStep] = useState<RegistrationStep>("FORM");
-  const [participantId, setParticipantId] = useState<string | null>(null);
-  const [whatsappUrl, setWhatsappUrl] = useState<string>("");
-  const [inputCode, setInputCode] = useState<string>("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -107,7 +97,7 @@ export default function InscricaoPublicaPage({
     }
   };
 
-  // Função para iniciar a inscrição
+  // Função para realizar a inscrição direta
   const handleStartRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -131,48 +121,7 @@ export default function InscricaoPublicaPage({
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "Falha ao iniciar inscrição.");
-      }
-
-      setParticipantId(data.participantId);
-      if (data.whatsappUrl) {
-        setWhatsappUrl(data.whatsappUrl);
-      }
-      setStep("VERIFY");
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Função para verificar o código numérico (OTP)
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setVerifyError(null);
-    setIsVerifying(true);
-
-    try {
-      if (!participantId) {
-        throw new Error("Sessão de inscrição inválida. Reinicie o processo.");
-      }
-
-      if (inputCode.replace(/\D/g, "").length !== 6) {
-        throw new Error("Digite o código de 6 dígitos completo.");
-      }
-
-      const res = await fetch(`/api/torneios/${tournamentId}/inscricao/verificar`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          participantId,
-          code: inputCode.trim(),
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Código inválido ou expirado.");
+        throw new Error(data.error || "Falha ao realizar a inscrição.");
       }
 
       confetti({
@@ -183,33 +132,7 @@ export default function InscricaoPublicaPage({
 
       setStep("SUCCESS");
     } catch (err: any) {
-      setVerifyError(err.message);
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
-  // Função para solicitar o reenvio do código de verificação
-  const handleResendCode = async () => {
-    setIsSubmitting(true);
-    setVerifyError(null);
-    try {
-      const res = await fetch(`/api/torneios/${tournamentId}/inscricao`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erro ao reenviar código.");
-
-      if (data.whatsappUrl) {
-        setWhatsappUrl(data.whatsappUrl);
-      }
-      setResendSuccess(true);
-      setTimeout(() => setResendSuccess(false), 4000);
-    } catch (err: any) {
-      setVerifyError(err.message);
+      setError(err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -289,19 +212,7 @@ export default function InscricaoPublicaPage({
                   : "bg-collegiate-dark text-slate-400 border border-collegiate-border"
               }`}
             >
-              <span>1. Dados</span>
-            </div>
-            <div className="h-0.5 w-4 bg-collegiate-border" />
-            <div
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold ${
-                step === "VERIFY"
-                  ? "bg-amber-500 text-slate-950 shadow-sm"
-                  : step === "SUCCESS"
-                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
-                  : "bg-collegiate-dark text-slate-400 border border-collegiate-border"
-              }`}
-            >
-              <span>2. Confirmação WhatsApp</span>
+              <span>1. Dados da Inscrição</span>
             </div>
             <div className="h-0.5 w-4 bg-collegiate-border" />
             <div
@@ -311,133 +222,12 @@ export default function InscricaoPublicaPage({
                   : "bg-collegiate-dark text-slate-400 border border-collegiate-border"
               }`}
             >
-              <span>3. Vaga Confirmada</span>
+              <span>2. Vaga Confirmada</span>
             </div>
           </div>
         </div>
 
-        {/* ETAPA 2: Verificação OTP do Telefone */}
-        {step === "VERIFY" && (
-          <div className="py-2 space-y-6">
-            <div className="text-center space-y-2">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-md">
-                <KeyRound className="h-7 w-7" />
-              </div>
-              <h2 className="text-2xl font-black text-white">Validar Número de WhatsApp</h2>
-              <p className="text-xs sm:text-sm text-emerald-100/80 max-w-md mx-auto">
-                Para evitar inscrições falsas e garantir o sorteio das chaves, confirme o código de 6 dígitos enviado para seu número.
-              </p>
-              <div className="inline-flex items-center gap-2 rounded-full bg-collegiate-dark px-3.5 py-1 text-xs font-mono font-bold text-amber-300 border border-collegiate-border mt-1">
-                <Smartphone className="h-3.5 w-3.5 text-amber-400" />
-                <span>{formData.phone}</span>
-                <button
-                  type="button"
-                  onClick={() => setStep("FORM")}
-                  className="text-[10px] text-emerald-300 hover:text-white underline ml-1"
-                >
-                  (Corrigir)
-                </button>
-              </div>
-            </div>
-
-            {verifyError && (
-              <div className="flex items-center gap-2.5 rounded-xl border border-red-500/30 bg-red-950/40 p-3.5 text-xs text-red-300">
-                <AlertCircle className="h-4 w-4 shrink-0 text-red-400" />
-                <span>{verifyError}</span>
-              </div>
-            )}
-
-            {resendSuccess && (
-              <div className="flex items-center gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-950/40 p-3.5 text-xs text-emerald-300">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
-                <span>Novo código enviado com sucesso! Confira seu WhatsApp.</span>
-              </div>
-            )}
-
-            {/* Banner para envio de mensagem direta no próprio WhatsApp */}
-            <div className="rounded-2xl border border-emerald-500/40 bg-emerald-950/30 p-5 space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 shrink-0">
-                  <MessageCircle className="h-5 w-5" />
-                </div>
-                <div className="space-y-1 text-left">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-300">
-                    1. Enviar mensagem para seu próprio WhatsApp:
-                  </h4>
-                  <p className="text-xs text-emerald-100/90 leading-relaxed">
-                    Clique no botão abaixo para abrir a mensagem com o código diretamente no seu WhatsApp:
-                  </p>
-                </div>
-              </div>
-
-              {whatsappUrl && (
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-3.5 text-sm sm:text-base font-bold text-white shadow-lg transition-all border border-emerald-500"
-                >
-                  <MessageCircle className="h-5 w-5" />
-                  <span>Abrir meu WhatsApp e Receber o Código</span>
-                </a>
-              )}
-            </div>
-
-            {/* Formulário de Verificação OTP */}
-            <form onSubmit={handleVerifyOtp} className="space-y-4 pt-1">
-              <div className="space-y-2 text-center">
-                <label
-                  htmlFor="inputCode"
-                  className="text-xs font-bold uppercase tracking-wider text-emerald-100/90 block"
-                >
-                  2. Digite o código de 6 dígitos recebido:
-                </label>
-                <input
-                  type="text"
-                  id="inputCode"
-                  maxLength={6}
-                  autoFocus
-                  required
-                  placeholder="000000"
-                  value={inputCode}
-                  onChange={(e) => setInputCode(e.target.value.replace(/\D/g, ""))}
-                  className="w-full max-w-[220px] mx-auto text-center font-mono text-2xl tracking-[0.4em] font-black rounded-xl border border-amber-500/60 bg-collegiate-dark px-4 py-3 text-amber-300 placeholder-slate-600 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/40"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isVerifying || inputCode.length !== 6}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 py-3.5 text-sm sm:text-base font-bold text-collegiate-dark shadow-xl shadow-amber-900/30 active:scale-95 disabled:opacity-40 transition-all border border-amber-400"
-              >
-                <Sparkles className="h-4 w-4" />
-                <span>{isVerifying ? "Validando Código..." : "Confirmar Código & Garantir Vaga"}</span>
-              </button>
-
-              <div className="flex items-center justify-between text-xs text-emerald-200/60 pt-2 px-1">
-                <button
-                  type="button"
-                  onClick={() => setStep("FORM")}
-                  className="hover:text-white flex items-center gap-1"
-                >
-                  <Edit3 className="h-3.5 w-3.5" />
-                  <span>Editar telefone</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleResendCode}
-                  disabled={isSubmitting}
-                  className="hover:text-amber-400 flex items-center gap-1 text-amber-300 font-semibold"
-                >
-                  <RefreshCw className="h-3.5 w-3.5" />
-                  <span>Reenviar código</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {/* ETAPA 3: Confirmação de Sucesso */}
+        {/* ETAPA 2: Confirmação de Sucesso */}
         {step === "SUCCESS" && (
           <div className="py-6 text-center space-y-5">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-lg">
@@ -446,7 +236,7 @@ export default function InscricaoPublicaPage({
             <div className="space-y-1.5">
               <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 px-3 py-0.5 text-[11px] font-bold text-emerald-300">
                 <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                <span>Telefone Verificado &bull; Inscrição Oficial</span>
+                <span>Inscrição Confirmada &bull; Vaga Garantida</span>
               </div>
               <h2 className="text-2xl font-black text-white">Vaga Confirmada na Mesa!</h2>
               <p className="text-sm text-emerald-100/80">
@@ -482,7 +272,6 @@ export default function InscricaoPublicaPage({
               <button
                 onClick={() => {
                   setStep("FORM");
-                  setInputCode("");
                   setFormData({
                     name: "",
                     nickname: "",
@@ -661,7 +450,7 @@ export default function InscricaoPublicaPage({
                 className="w-full rounded-xl border border-collegiate-border bg-collegiate-dark/90 px-4 py-2.5 text-base sm:text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
               />
               <p className="text-[11px] text-emerald-200/60">
-                🔒 Um código de 6 dígitos será enviado para confirmar este número antes de garantir a vaga.
+                Informe o WhatsApp para receber comunicados e convocações dos jogos.
               </p>
             </div>
 
@@ -692,7 +481,7 @@ export default function InscricaoPublicaPage({
               className="w-full flex items-center justify-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 py-3.5 text-sm sm:text-base font-bold text-collegiate-dark shadow-xl shadow-amber-900/30 active:scale-95 disabled:opacity-50 transition-all mt-4 border border-amber-400"
             >
               <Sparkles className="h-4 w-4" />
-              <span>{isSubmitting ? "Enviando Dados..." : "Avançar para Validação do WhatsApp"}</span>
+              <span>{isSubmitting ? "Confirmando Inscrição..." : "Confirmar Inscrição na Mesa"}</span>
             </button>
           </form>
         )}

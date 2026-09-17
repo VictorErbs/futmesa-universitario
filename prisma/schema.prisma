@@ -37,6 +37,7 @@ model Participant {
   nickname           String?         // Vulgo / Apelido no bairro (ex: Dadá, Juninho)
   neighborhood       String?         // Bairro de Olinda (ex: Rio Doce, Peixinhos, Bultrins)
   communityOrProject String?         // Equipe, Arena ou Projeto Social
+  phone              String?
   seed               Int?
   groupName          String?
   matchesAsP1        Match[]         @relation("Participant1")
