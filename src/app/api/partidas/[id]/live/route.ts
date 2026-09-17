@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { updateMatchScoreAndAdvance } from "@/lib/match-service";
 import { isAdmin } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
+
 
 interface RouteParams {
   params: Promise<{ id: string }>;

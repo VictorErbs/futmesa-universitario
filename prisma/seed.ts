@@ -189,6 +189,17 @@ async function main() {
     ],
   });
 
+  // 3. Admin padrão
+  const defaultAdmin = await prisma.admin.upsert({
+    where: { username: "admin" },
+    update: {},
+    create: {
+      username: "admin",
+      password: "admin123",
+    },
+  });
+  console.log(`👤 Admin padrão garantido: usuário '${defaultAdmin.username}', senha 'admin123'`);
+
   console.log("✅ Seed finalizado com sucesso!");
 }
 

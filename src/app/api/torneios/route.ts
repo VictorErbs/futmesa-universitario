@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 // Rota GET para listar todos os torneios com a contagem de participantes e partidas
 export async function GET() {
   try {

@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Tournament {
@@ -35,10 +36,14 @@ model Participant {
   tournament         Tournament      @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   name               String
   nickname           String?         // Vulgo / Apelido no bairro (ex: Dadá, Juninho)
+  partnerName        String?         // Nome do parceiro (duplas)
+  partnerNickname    String?         // Apelido do parceiro (duplas)
   neighborhood       String?         // Bairro de Olinda (ex: Rio Doce, Peixinhos, Bultrins)
   communityOrProject String?         // Equipe, Arena ou Projeto Social
   phone              String?
+  email              String?
   seed               Int?
+  status             String?         @default("PENDING") // 'PENDING', 'CONFIRMED', 'ELIMINATED'
   groupName          String?
   matchesAsP1        Match[]         @relation("Participant1")
   matchesAsP2        Match[]         @relation("Participant2")
