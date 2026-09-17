@@ -23,7 +23,7 @@ export const GroupTable: React.FC<GroupTableProps> = ({
 
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900/90 shadow-lg overflow-hidden">
-      {/* Header */}
+      {/* Cabeçalho */}
       <div className="flex items-center justify-between border-b border-slate-800 bg-slate-950/60 px-4 py-3">
         <div className="flex items-center gap-2">
           <div className="h-3 w-3 rounded-full bg-emerald-500"></div>
@@ -36,7 +36,7 @@ export const GroupTable: React.FC<GroupTableProps> = ({
         </span>
       </div>
 
-      {/* Table */}
+      {/* Tabela */}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs sm:text-sm">
           <thead className="border-b border-slate-800 bg-slate-950/40 text-[11px] font-bold uppercase tracking-wider text-slate-400">
@@ -70,7 +70,7 @@ export const GroupTable: React.FC<GroupTableProps> = ({
                       isTop2 ? "bg-emerald-950/20 hover:bg-emerald-950/30" : "hover:bg-slate-800/40"
                     )}
                   >
-                    {/* Position */}
+                    {/* Posição */}
                     <td className="py-3 px-3 text-center font-mono font-bold">
                       <div className="flex items-center justify-center">
                         {isTop2 ? (
@@ -83,7 +83,7 @@ export const GroupTable: React.FC<GroupTableProps> = ({
                       </div>
                     </td>
 
-                    {/* Name */}
+                    {/* Nome */}
                     <td className="py-3 px-3">
                       <div className="flex flex-col">
                         <div className="flex items-center gap-1.5 font-semibold text-slate-200">
@@ -102,7 +102,7 @@ export const GroupTable: React.FC<GroupTableProps> = ({
                       </div>
                     </td>
 
-                    {/* Stats */}
+                    {/* Estatísticas */}
                     <td className="py-3 px-2 text-center font-mono text-slate-300">
                       {row.played}
                     </td>
@@ -152,7 +152,7 @@ export const GroupTable: React.FC<GroupTableProps> = ({
         </table>
       </div>
 
-      {/* Footer Legend */}
+      {/* Legenda do Rodapé */}
       <div className="flex items-center gap-2 border-t border-slate-800 bg-slate-950/40 px-4 py-2 text-[11px] text-slate-400">
         <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
         <span>Zona de classificação (Avançam os 2 melhores de cada grupo)</span>

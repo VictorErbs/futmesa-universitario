@@ -1,10 +1,10 @@
 import React from "react";
 import { Layers } from "lucide-react";
 import { GroupTable } from "@/components/tournament/GroupTable";
-import { GroupType } from "@/types/tournament"; // Assuming this type exists or can be any if not
+import { GroupType } from "@/types/tournament"; // Assumindo que este tipo existe ou pode ser 'any' se não existir
 
 interface GroupsTabProps {
-  groups: any[]; // Using any[] for now as it wasn't clearly typed in the main file
+  groups: any[]; // Usando any[] por enquanto, pois não foi claramente tipado no arquivo principal
   pointsPerSet: number;
 }
 

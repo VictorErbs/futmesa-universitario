@@ -13,8 +13,8 @@ export interface SetScoreInput {
 }
 
 /**
- * Updates match scores in SQLite via Prisma, clamps points to max allowed for the tournament,
- * evaluates set and match winners, and automatically advances the winner to the next round / final.
+ * Atualiza o placar das partidas no SQLite via Prisma, limita os pontos ao máximo permitido para o torneio,
+ * avalia os vencedores dos sets e da partida e avança automaticamente o vencedor para a próxima rodada/final.
  */
 export async function updateMatchScoreAndAdvance(
   matchId: string,
@@ -37,7 +37,7 @@ export async function updateMatchScoreAndAdvance(
   const advantageRule = match.tournament.advantageRule;
   const maxScore = getMaxPointsForTournament(pointsPerSet);
 
-  // Update or insert each set with score clamped to maxScore
+  // Atualiza ou insere cada set com a pontuação limitada ao valor máximo (maxScore)
   for (const s of setsInput) {
     const clampedScore1 = Math.min(maxScore, Math.max(0, Number(s.score1) || 0));
     const clampedScore2 = Math.min(maxScore, Math.max(0, Number(s.score2) || 0));
@@ -66,7 +66,7 @@ export async function updateMatchScoreAndAdvance(
     }
   }
 
-  // Fetch fresh sets from DB
+  // Busca os sets atualizados no banco de dados
   const updatedSets = await prisma.matchSet.findMany({
     where: { matchId },
     orderBy: { setNumber: "asc" },
@@ -93,7 +93,7 @@ export async function updateMatchScoreAndAdvance(
 
   const previousWinnerId = match.winnerId;
 
-  // Update match in database
+  // Atualiza a partida no banco de dados
   const updatedMatch = await prisma.match.update({
     where: { id: matchId },
     data: {
@@ -110,10 +110,10 @@ export async function updateMatchScoreAndAdvance(
     },
   });
 
-  // Advance or clear winner in next match (e.g. final)
+  // Avança ou limpa o vencedor na próxima partida (ex: final)
   if (match.nextMatchId && match.nextMatchSlot) {
     if (newWinnerId) {
-      // Set the new winner in the appropriate slot of the next match
+      // Define o novo vencedor na vaga (slot) apropriada da próxima partida
       const slotData =
         match.nextMatchSlot === 1
           ? { participant1Id: newWinnerId }
@@ -124,7 +124,7 @@ export async function updateMatchScoreAndAdvance(
         data: slotData,
       });
     } else if (previousWinnerId) {
-      // If the match no longer has a winner, clear the slot if it had previousWinnerId
+      // Se a partida não tem mais um vencedor, limpa a vaga se ela tinha o previousWinnerId
       const nextMatch = await prisma.match.findUnique({
         where: { id: match.nextMatchId },
       });
@@ -144,7 +144,7 @@ export async function updateMatchScoreAndAdvance(
     }
   }
 
-  // Update tournament status if this is the final match
+  // Atualiza o status do torneio se esta for a partida final
   if (match.stage === "FINAL" || !match.nextMatchId) {
     if (newWinnerId) {
       await prisma.tournament.update({

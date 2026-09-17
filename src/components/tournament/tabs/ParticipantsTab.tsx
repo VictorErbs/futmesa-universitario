@@ -1,10 +1,10 @@
 import React from "react";
 import { Users } from "lucide-react";
 import Link from "next/link";
-import { ParticipantType } from "@/types/tournament"; // Assuming this type exists
+import { ParticipantType } from "@/types/tournament";
 
 interface ParticipantsTabProps {
-  participants: any[]; // Using any[] for now, will map to the original array type
+  participants: ParticipantType[];
   participantsCount: number;
   tournamentId: string;
 }
@@ -38,9 +38,8 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({
                 <tr>
                   <th className="py-3 px-4 w-12 text-center">#</th>
                   <th className="py-3 px-4">Nome do Jogador / Dupla</th>
-                  <th className="py-3 px-4">Parceiro</th>
-                  <th className="py-3 px-4">Contato</th>
-                  <th className="py-3 px-4 text-center">Status</th>
+                  <th className="py-3 px-4">Apelido (Vulgo)</th>
+                  <th className="py-3 px-4">Bairro / Comunidade</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
@@ -53,15 +52,10 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({
                       {p.name}
                     </td>
                     <td className="py-3 px-4 text-slate-400">
-                      {p.partnerName || "-"}
+                      {p.nickname || "-"}
                     </td>
-                    <td className="py-3 px-4 text-slate-400 font-mono text-xs">
-                      {p.phone || p.email || "-"}
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <span className="inline-flex items-center rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-400 border border-emerald-500/30">
-                        Confirmado
-                      </span>
+                    <td className="py-3 px-4 text-slate-400">
+                      {p.neighborhood || p.communityOrProject || "-"}
                     </td>
                   </tr>
                 ))}

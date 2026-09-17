@@ -13,6 +13,7 @@ import {
   Flame,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAdmin } from "@/hooks/useAdmin";
 import { useScoreboardState } from "./useScoreboardState";
 import { PlayerScoreCard } from "./PlayerScoreCard";
 
@@ -23,6 +24,7 @@ interface LiveScoreboardModalProps {
   isOpen: boolean;
   onClose: () => void;
   onMatchUpdated?: () => void;
+  isAdmin?: boolean;
 }
 
 export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
@@ -32,7 +34,10 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
   isOpen,
   onClose,
   onMatchUpdated,
+  isAdmin: propIsAdmin,
 }) => {
+  const { isAdmin: hookIsAdmin } = useAdmin();
+  const isAdmin = propIsAdmin ?? hookIsAdmin;
   const { state, dispatch } = useScoreboardState(match, maxSets, pointsPerSet, isOpen);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
@@ -70,18 +75,19 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
         colors: ["#10b981", "#34d399", "#f59e0b", "#3b82f6", "#ffffff"],
       });
     } catch {
-      // safe fallback
+      // fallback de segurança
     }
   };
 
   const handleScoreChange = (side: 1 | 2, delta: number) => {
+    if (!isAdmin) return;
     dispatch({ type: "SCORE_CHANGE", side, delta, pointsPerSet, maxSets });
 
-    // Extract the latest scores to sync properly
+    // Extrai os últimos pontos para sincronizar corretamente
     const newScore1 = side === 1 ? Math.max(0, currentSet.score1 + delta) : currentSet.score1;
     const newScore2 = side === 2 ? Math.max(0, currentSet.score2 + delta) : currentSet.score2;
     
-    // Auto-save live point in background
+    // Salva o ponto ao vivo automaticamente em segundo plano
     syncLiveScore(
       side === 1 ? newScore1 : currentSet.score1,
       side === 2 ? newScore2 : currentSet.score2
@@ -89,15 +95,17 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
   };
 
   const handleUndo = () => {
+    if (!isAdmin) return;
     dispatch({ type: "UNDO" });
   };
 
   const handleFinishSet = () => {
+    if (!isAdmin) return;
     dispatch({ type: "FINISH_SET", maxSets, pointsPerSet });
     
-    // Evaluate if match is finished after dispatching
-    // We can't immediately see the new state here easily without duplicating logic,
-    // so we evaluate the NEXT state simulating the finish.
+    // Avalia se a partida terminou após o despacho
+    // Não conseguimos ver o novo estado aqui facilmente sem duplicar a lógica,
+    // então avaliamos o PRÓXIMO estado simulando o fim.
     const nextSets = [...sets];
     if (nextSets[currentSetIndex]) {
       nextSets[currentSetIndex] = { ...nextSets[currentSetIndex], isFinished: true };
@@ -109,7 +117,7 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
     }
   };
 
-  // Sync to database
+  // Sincroniza com o banco de dados
   const syncLiveScore = async (score1: number, score2: number) => {
     try {
       const res = await fetch(`/api/partidas/${match.id}/live`, {
@@ -132,11 +140,12 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
         }
       }
     } catch {
-      // quiet live ping
+      // ping ao vivo silencioso (ignora erros)
     }
   };
 
   const handleSaveAndFinalize = async () => {
+    if (!isAdmin) return;
     setIsSaving(true);
     setSaveMessage(null);
 
@@ -189,7 +198,7 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-md p-2 sm:p-4">
       <div className="flex min-h-full items-center justify-center py-2">
         <div className="relative w-full max-w-4xl rounded-3xl border border-collegiate-border bg-collegiate-dark/95 arena-grid-pattern p-4 sm:p-6 shadow-2xl flex flex-col justify-between my-auto">
-          {/* Top Bar */}
+          {/* Barra Superior */}
           <div className="flex items-center justify-between border-b border-collegiate-border/80 pb-3 shrink-0">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 font-bold border border-amber-500/30 shadow-md">
@@ -218,7 +227,14 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
             </button>
           </div>
 
-          {/* Set Selector Tabs */}
+          {/* Modo Visualização Alert */}
+          {!isAdmin && (
+            <div className="mt-3 bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs px-3 py-1.5 rounded-lg text-center font-medium">
+              Modo Visualização: Apenas o administrador pode alterar o placar desta partida.
+            </div>
+          )}
+
+          {/* Abas de Seleção de Set */}
           <div className="my-3 flex items-center justify-between gap-2 overflow-x-auto py-1 shrink-0 no-scrollbar">
             <div className="flex items-center gap-2 shrink-0">
               {sets.map((s, idx) => {
@@ -256,7 +272,7 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
               </button>
               <button
                 onClick={handleUndo}
-                disabled={history.length === 0}
+                disabled={history.length === 0 || !isAdmin}
                 title="Desfazer último ponto"
                 className="flex items-center gap-1.5 rounded-xl border border-collegiate-border bg-collegiate-surface/90 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-bold text-emerald-100/90 hover:bg-collegiate-surfaceHover hover:border-amber-400/50 disabled:opacity-30 disabled:pointer-events-none transition-colors shadow-sm whitespace-nowrap shrink-0"
               >
@@ -266,7 +282,7 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
             </div>
           </div>
 
-          {/* Live Status Pill (Deuce / Set Point / Status) */}
+          {/* Pílula de Status ao Vivo (Deuce / Set Point / Status) */}
           <div className="mb-2 sm:mb-3 flex items-center justify-center shrink-0">
             <div
               className={cn(
@@ -283,7 +299,7 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
             </div>
           </div>
 
-          {/* Main Big Scoreboard Grid */}
+          {/* Grade Principal do Placar Grande */}
           <div className="grid grid-cols-2 gap-3 sm:gap-6 my-2 sm:my-auto">
             <PlayerScoreCard
               sideLabel={leftSide === 1 ? "Lado 1" : "Lado 2"}
@@ -293,6 +309,7 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
               onScoreChange={(delta) => handleScoreChange(leftSide, delta)}
               disabledMinus={leftScore === 0}
               isInLead={leftScore > rightScore}
+              disabled={!isAdmin}
             />
             <PlayerScoreCard
               sideLabel={rightSide === 1 ? "Lado 1" : "Lado 2"}
@@ -302,12 +319,13 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
               onScoreChange={(delta) => handleScoreChange(rightSide, delta)}
               disabledMinus={rightScore === 0}
               isInLead={rightScore > leftScore}
+              disabled={!isAdmin}
             />
           </div>
 
-          {/* Bottom Control Bar */}
+          {/* Barra de Controle Inferior */}
           <div className="mt-3 sm:mt-4 pt-3 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-2.5 shrink-0">
-            {/* Match finished indicator or message */}
+            {/* Indicador ou mensagem de partida finalizada */}
             <div>
               {saveMessage && (
                 <span className="text-xs font-semibold text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-3 py-1 rounded-lg">
@@ -325,25 +343,27 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
               )}
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              {setEvaluation.finished && !currentSet.isFinished && (
-                <button
-                  onClick={handleFinishSet}
-                  className="flex-1 sm:flex-initial rounded-xl bg-amber-500 px-4 py-2 text-xs sm:text-sm font-bold text-amber-950 hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20 whitespace-nowrap"
-                >
-                  Confirmar Fim do Set {currentSetIndex + 1}
-                </button>
-              )}
+            {isAdmin && (
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                {setEvaluation.finished && !currentSet.isFinished && (
+                  <button
+                    onClick={handleFinishSet}
+                    className="flex-1 sm:flex-initial rounded-xl bg-amber-500 px-4 py-2 text-xs sm:text-sm font-bold text-amber-950 hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20 whitespace-nowrap"
+                  >
+                    Confirmar Fim do Set {currentSetIndex + 1}
+                  </button>
+                )}
 
-              <button
-                onClick={handleSaveAndFinalize}
-                disabled={isSaving}
-                className="flex-1 sm:flex-initial flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-600/30 hover:bg-emerald-500 active:scale-95 disabled:opacity-50 transition-all whitespace-nowrap"
-              >
-                <CheckCircle className="h-4 w-4" />
-                <span>{isSaving ? "Salvando..." : "Salvar & Encerrar Partida"}</span>
-              </button>
-            </div>
+                <button
+                  onClick={handleSaveAndFinalize}
+                  disabled={isSaving}
+                  className="flex-1 sm:flex-initial flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2 text-xs sm:text-sm font-bold text-white shadow-lg shadow-emerald-600/30 hover:bg-emerald-500 active:scale-95 disabled:opacity-50 transition-all whitespace-nowrap"
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  <span>{isSaving ? "Salvando..." : "Salvar & Encerrar Partida"}</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

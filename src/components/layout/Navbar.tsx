@@ -3,8 +3,11 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Trophy, PlusCircle, BookOpen, Menu, X, MapPin } from "lucide-react";
+import { useAdmin } from "@/hooks/useAdmin";
+import { LogOut, ShieldCheck, User } from "lucide-react";
 
 export const Navbar = () => {
+  const { isAdmin, loading, logout } = useAdmin();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -48,6 +51,27 @@ export const Navbar = () => {
             </Link>
           </nav>
         </div>
+
+{isAdmin ? (
+  <div className="flex items-center gap-2">
+    <span className="flex items-center gap-1 text-xs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-lg">
+      <ShieldCheck className="h-3.5 w-3.5" /> Admin
+    </span>
+    <button
+      onClick={logout}
+      className="text-xs text-rose-400 hover:text-rose-300 font-semibold flex items-center gap-1 border border-rose-500/30 px-2 py-1 rounded-lg"
+    >
+      <LogOut className="h-3.5 w-3.5" /> Sair
+    </button>
+  </div>
+) : (
+  <Link
+    href="/admin/login"
+    className="text-xs text-slate-400 hover:text-white flex items-center gap-1 border border-slate-800 px-2.5 py-1 rounded-lg"
+  >
+    <User className="h-3.5 w-3.5" /> Entrar como Admin
+  </Link>
+)}
 
         {/* Mobile menu button */}
         <div className="flex md:hidden items-center gap-2">
@@ -95,4 +119,5 @@ export const Navbar = () => {
       )}
     </header>
   );
+
 };

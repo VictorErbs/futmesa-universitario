@@ -27,13 +27,13 @@ export default function NovoTorneioPage() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    community: "", // Added community field
-    modality: "DUPLAS", // INDIVIDUAL, DUPLAS
-    format: "MATA_MATA", // MATA_MATA, GRUPOS_E_MATA_MATA
-    pointsPerSet: 18, // 15, 18, 21
-    maxSets: 3, // 1, 3
+    community: "",
+    modality: "DUPLAS",
+    format: "MATA_MATA",
+    pointsPerSet: 18,
+    maxSets: 3,
     location: "Mesa Universitária de MesaMatch - Campus Central",
-    startDate: new Date().toISOString().slice(0, 16), // YYYY-MM-DDTHH:mm
+    startDate: new Date().toISOString().slice(0, 16),
   });
 
   const handleChange = (
@@ -83,7 +83,7 @@ export default function NovoTorneioPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-      {/* Back button */}
+      {/* Botão de Voltar */}
       <Link
         href="/"
         className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-200/70 hover:text-amber-400 transition-colors mb-6"
@@ -92,7 +92,7 @@ export default function NovoTorneioPage() {
         <span>Voltar para Campeonatos</span>
       </Link>
 
-      {/* Main Form Card */}
+      {/* Cartão Principal do Formulário */}
       <div className="rounded-3xl border border-collegiate-border bg-collegiate-surface/95 p-6 sm:p-8 shadow-2xl backdrop-blur">
         <div className="flex items-center gap-3 border-b border-collegiate-border/80 pb-5 mb-6">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-md">
@@ -181,7 +181,7 @@ export default function NovoTorneioPage() {
             </div>
           </div>
 
-          {/* Quick presets for Olinda locations */}
+          {/* Sugestões rápidas de locais em Olinda */}
           <div className="space-y-1.5">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-200/60">
               Sugestões rápidas de locais em Olinda:
@@ -200,7 +200,7 @@ export default function NovoTorneioPage() {
             </div>
           </div>
 
-          {/* Grid: Modalidade & Formato */}
+          {/* Grade: Modalidade e Formato */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Modalidade */}
             <div className="space-y-2">
@@ -247,7 +247,7 @@ export default function NovoTorneioPage() {
             </div>
           </div>
 
-          {/* Grid: Regras de Pontuação */}
+          {/* Grade: Regras de Pontuação */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Pontos por Set */}
             <div className="space-y-2">
@@ -331,7 +331,7 @@ export default function NovoTorneioPage() {
             />
           </div>
 
-          {/* Submit Button */}
+          {/* Botão de Envio */}
           <div className="pt-4 border-t border-collegiate-border/80 flex items-center justify-end gap-3">
             <Link
               href="/"

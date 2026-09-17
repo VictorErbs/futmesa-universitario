@@ -4,16 +4,25 @@ import {
   generateSingleEliminationBracket,
   generateGroupsAndRoundRobin,
 } from "@/lib/tournament-engine";
+import { isAdmin } from "@/lib/auth";
 
+// Define os parâmetros da rota
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-// POST /api/torneios/[id]/sortear - Draw and generate tournament bracket/groups
+// Rota POST para realizar o sorteio do torneio
 export async function POST(req: NextRequest, { params }: RouteParams) {
   try {
+    // Verifica se o usuário é um administrador
+    if (!(await isAdmin())) {
+      return NextResponse.json({ error: "Apenas administradores podem realizar o sorteio." }, { status: 403 });
+    }
+
+    // Obtém o ID do torneio a partir dos parâmetros
     const { id } = await params;
 
+    // Busca os dados do torneio no banco de dados, incluindo os participantes
     const tournament = await prisma.tournament.findUnique({
       where: { id },
       include: {
@@ -28,7 +37,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Only draw confirmed & verified participants
+    // Filtra apenas os participantes confirmados para o sorteio
     const participants = tournament.participants.filter(
       (p) => p.status === "CONFIRMED"
     );
@@ -43,10 +52,10 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Shuffle participants randomly for a fair community draw
+    // Embaralha os participantes aleatoriamente para garantir um sorteio justo
     const shuffled = [...participants].sort(() => Math.random() - 0.5);
 
-    // Delete previous matches, sets, and groups for clean regeneration
+    // Apaga os dados anteriores de partidas, sets e grupos para uma nova geração limpa
     await prisma.matchSet.deleteMany({
       where: { match: { tournamentId: id } },
     });
@@ -57,10 +66,14 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       where: { tournamentId: id },
     });
 
+    // Define a quantidade de sets com base nas regras do torneio
     const setsCount = tournament.setsToWin === 1 ? 1 : 3;
 
     if (tournament.format === "GROUPS_AND_KNOCKOUT" && participants.length >= 4) {
+      // Define o tamanho de cada grupo de acordo com o total de participantes
       const groupSize = participants.length >= 8 ? 4 : 3;
+      
+      // Gera os grupos e as partidas da fase de grupos
       const { groups, matches } = generateGroupsAndRoundRobin(
         shuffled,
         groupSize,
@@ -68,7 +81,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         tournament.pointsPerSet
       );
 
-      // Create groups in database
+      // Cria os grupos no banco de dados
       for (const grp of groups) {
         await prisma.tournamentGroup.create({
           data: {
@@ -77,7 +90,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
           },
         });
 
-        // Update groupName on participants
+        // Atualiza o nome do grupo para cada participante
         for (const p of grp.participants) {
           await prisma.participant.update({
             where: { id: p.id },
@@ -86,8 +99,9 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         }
       }
 
-      // Create group matches
+      // Cria as partidas da fase de grupos
       for (const m of matches) {
+        // Cria o registro da partida no banco de dados
         const createdMatch = await prisma.match.create({
           data: {
             tournamentId: id,
@@ -114,17 +128,19 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         }
       }
     } else {
-      // SINGLE_ELIMINATION (Mata-Mata)
+      // Formato SINGLE_ELIMINATION (Mata-Mata)
+      // Gera as chaves do formato mata-mata
       const engineMatches = generateSingleEliminationBracket(
         shuffled,
         tournament.setsToWin,
         tournament.pointsPerSet
       );
 
-      // Map generated engine match IDs to real DB match IDs
+      // Mapeia os IDs gerados pelo motor para os IDs reais do banco de dados
       const idMap = new Map<string, string>();
 
       for (const em of engineMatches) {
+        // Cria a partida no banco de dados
         const createdMatch = await prisma.match.create({
           data: {
             tournamentId: id,
@@ -154,9 +170,11 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         }
       }
 
-      // Second pass: link nextMatchId and handle initial BYE auto advances
+      // Segunda etapa: vincula as próximas partidas e trata os avanços automáticos (BYE)
       for (const em of engineMatches) {
+        // ID real da partida atual
         const realMatchId = idMap.get(em.id);
+        // ID real da próxima partida
         const realNextMatchId = em.nextMatchId ? idMap.get(em.nextMatchId) : null;
 
         if (realMatchId && realNextMatchId) {
@@ -168,7 +186,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
             },
           });
 
-          // If this was an auto-BYE win, make sure next match has the participant
+          // Se for uma vitória por bye (automática), garante que a próxima partida tenha o participante
           if (em.winnerId && em.nextMatchSlot) {
             await prisma.match.update({
               where: { id: realNextMatchId },
@@ -183,7 +201,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       }
     }
 
-    // Update tournament status
+    // Atualiza o status do torneio para em andamento
     await prisma.tournament.update({
       where: { id },
       data: { status: "IN_PROGRESS" },

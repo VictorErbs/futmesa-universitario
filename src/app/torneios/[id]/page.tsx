@@ -32,6 +32,7 @@ import { MatchesTab } from "@/components/tournament/tabs/MatchesTab";
 import { ParticipantsTab } from "@/components/tournament/tabs/ParticipantsTab";
 import { formatDateTime } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { useAdmin } from "@/hooks/useAdmin";
 
 type TabKey = "overview" | "bracket" | "groups" | "matches" | "participants";
 
@@ -50,16 +51,18 @@ export default function TournamentHubPage({
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawSuccess, setDrawSuccess] = useState<string | null>(null);
 
-  // Scoreboard & Social card modal state
+  // Estado do placar ao vivo e do cartão social (modal)
   const [selectedMatch, setSelectedMatch] = useState<MatchType | null>(null);
   const [isScoreboardOpen, setIsScoreboardOpen] = useState(false);
   const [isSocialCardOpen, setIsSocialCardOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const { isAdmin } = useAdmin();
 
-  // Filter for participants
+  // Estado para filtro de participantes
   const [participantSearch, setParticipantSearch] = useState("");
   const [selectedBairroFilter, setSelectedBairroFilter] = useState("TODOS");
 
+  // Função para buscar os dados do torneio
   const fetchTournamentData = async () => {
     try {
       const res = await fetch(`/api/torneios/${tournamentId}`);
@@ -77,6 +80,7 @@ export default function TournamentHubPage({
     fetchTournamentData();
   }, [tournamentId]);
 
+  // Função para sortear as chaves do torneio
   const handleDrawBracket = async () => {
     if (
       !confirm(
@@ -108,6 +112,7 @@ export default function TournamentHubPage({
     }
   };
 
+  // Função para copiar o link de inscrição
   const handleCopyRegistrationLink = async () => {
     const url = `${window.location.origin}/torneios/${tournamentId}/inscricao`;
     await navigator.clipboard.writeText(url);
@@ -115,6 +120,7 @@ export default function TournamentHubPage({
     setTimeout(() => setCopiedLink(false), 2500);
   };
 
+  // Função para compartilhar o link no WhatsApp
   const handleShareWhatsApp = () => {
     const url = `${window.location.origin}/torneios/${tournamentId}/inscricao`;
     const text = encodeURIComponent(
@@ -123,6 +129,7 @@ export default function TournamentHubPage({
     window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
   };
 
+  // Função para abrir o placar ao vivo da partida
   const handleOpenScoreboard = (match: MatchType) => {
     setSelectedMatch(match);
     setIsScoreboardOpen(true);
@@ -170,7 +177,7 @@ export default function TournamentHubPage({
   const maxSetsCount = tournament.maxSets || (tournament.setsToWin === 1 ? 1 : 3);
   const setsToWinCount = tournament.setsToWin || Math.ceil(maxSetsCount / 2);
 
-  // Filtered participants list
+  // Lista de participantes filtrada pela busca
   const filteredParticipants = (tournament.participants || []).filter((p) => {
     const matchesQuery =
       participantSearch === "" ||
@@ -188,7 +195,7 @@ export default function TournamentHubPage({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
-      {/* Top Breadcrumb & Action Bar */}
+      {/* Breadcrumb Superior e Barra de Ações */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <Link
           href="/"
@@ -198,7 +205,7 @@ export default function TournamentHubPage({
           <span>Voltar para todos os campeonatos</span>
         </Link>
 
-        {/* Quick public registration & social buttons */}
+        {/* Botões de atalho para inscrição e redes sociais */}
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setIsSocialCardOpen(true)}
@@ -224,7 +231,7 @@ export default function TournamentHubPage({
         </div>
       </div>
 
-      {/* Tournament Header Banner */}
+      {/* Banner de Cabeçalho do Torneio */}
       <div className="relative overflow-hidden rounded-3xl border border-collegiate-border bg-gradient-to-r from-collegiate-dark via-collegiate-surface/90 to-collegiate-dark p-6 sm:p-8 shadow-xl">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-3 max-w-3xl">
@@ -271,26 +278,28 @@ export default function TournamentHubPage({
             </div>
           </div>
 
-          {/* Quick Action Drawer */}
+          {/* Painel de Ações Rápidas */}
           <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
-            {matchesCount === 0 ? (
-              <button
-                onClick={handleDrawBracket}
-                disabled={isDrawing || participantsCount < 2}
-                className="flex items-center justify-center gap-2 rounded-2xl bg-amber-500 px-6 py-3.5 text-sm font-bold text-collegiate-dark shadow-xl shadow-amber-900/30 hover:bg-amber-400 active:scale-95 disabled:opacity-50 transition-all border border-amber-400"
-              >
-                <Shuffle className="h-4 w-4" />
-                <span>{isDrawing ? "Gerando Chaves..." : "Sortear Chaves do Torneio"}</span>
-              </button>
-            ) : (
-              <button
-                onClick={handleDrawBracket}
-                disabled={isDrawing}
-                className="flex items-center justify-center gap-1.5 rounded-xl border border-collegiate-border bg-collegiate-surface px-4 py-2.5 text-xs font-bold text-amber-300 hover:bg-collegiate-surfaceHover transition-all"
-              >
-                <Shuffle className="h-3.5 w-3.5 text-amber-400" />
-                <span>Re-sortear Chaveamento</span>
-              </button>
+            {isAdmin && (
+              matchesCount === 0 ? (
+                <button
+                  onClick={handleDrawBracket}
+                  disabled={isDrawing || participantsCount < 2}
+                  className="flex items-center justify-center gap-2 rounded-2xl bg-amber-500 px-6 py-3.5 text-sm font-bold text-collegiate-dark shadow-xl shadow-amber-900/30 hover:bg-amber-400 active:scale-95 disabled:opacity-50 transition-all border border-amber-400"
+                >
+                  <Shuffle className="h-4 w-4" />
+                  <span>{isDrawing ? "Gerando Chaves..." : "Sortear Chaves do Torneio"}</span>
+                </button>
+              ) : (
+                <button
+                  onClick={handleDrawBracket}
+                  disabled={isDrawing}
+                  className="flex items-center justify-center gap-1.5 rounded-xl border border-collegiate-border bg-collegiate-surface px-4 py-2.5 text-xs font-bold text-amber-300 hover:bg-collegiate-surfaceHover transition-all"
+                >
+                  <Shuffle className="h-3.5 w-3.5 text-amber-400" />
+                  <span>Re-sortear Chaveamento</span>
+                </button>
+              )
             )}
 
             <Link
@@ -311,7 +320,7 @@ export default function TournamentHubPage({
         )}
       </div>
 
-      {/* Tabs Navigation */}
+      {/* Navegação por Abas */}
       <div className="border-b border-collegiate-border overflow-x-auto">
         <nav className="flex items-center gap-2 sm:gap-4 py-1 min-w-max">
           <button
@@ -383,7 +392,7 @@ export default function TournamentHubPage({
         </nav>
       </div>
 
-      {/* Tab Content 1: Overview */}
+      {/* Conteúdo da Aba 1: Visão Geral */}
       {activeTab === "overview" && (
         <OverviewTab
           tournament={tournament}
@@ -399,7 +408,7 @@ export default function TournamentHubPage({
         />
       )}
 
-      {/* Tab Content 2: Bracket */}
+      {/* Conteúdo da Aba 2: Chaveamento */}
       {activeTab === "bracket" && (
         <BracketTab
           matches={tournament.matches || []}
@@ -410,7 +419,7 @@ export default function TournamentHubPage({
         />
       )}
 
-      {/* Tab Content 3: Groups */}
+      {/* Conteúdo da Aba 3: Grupos */}
       {activeTab === "groups" && isGroups && (
         <GroupsTab
           groups={tournament.groups || []}
@@ -418,7 +427,7 @@ export default function TournamentHubPage({
         />
       )}
 
-      {/* Tab Content 4: Matches & Scoreboard */}
+      {/* Conteúdo da Aba 4: Partidas e Placar */}
       {activeTab === "matches" && (
         <MatchesTab
           matches={tournament.matches || []}
@@ -426,7 +435,7 @@ export default function TournamentHubPage({
         />
       )}
 
-      {/* Tab Content 5: Participants */}
+      {/* Conteúdo da Aba 5: Participantes */}
       {activeTab === "participants" && (
         <ParticipantsTab
           participants={tournament.participants || []}
@@ -435,7 +444,7 @@ export default function TournamentHubPage({
         />
       )}
 
-      {/* Live Scoreboard Modal */}
+      {/* Modal do Placar ao Vivo */}
       {selectedMatch && (
         <LiveScoreboardModal
           match={selectedMatch}
@@ -450,7 +459,7 @@ export default function TournamentHubPage({
         />
       )}
 
-      {/* Social Card Modal */}
+      {/* Modal do Cartão Social */}
       <SocialCardModal
         tournament={tournament}
         isOpen={isSocialCardOpen}

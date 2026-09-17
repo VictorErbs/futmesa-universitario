@@ -5,16 +5,18 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-// GET /api/torneios/[id] - Complete tournament details
+// Rota GET para obter os detalhes completos do torneio
 export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
+    // Obtém o ID do torneio a partir dos parâmetros
     const { id } = await params;
 
+    // Busca o torneio no banco de dados com seus relacionamentos
     const tournament = await prisma.tournament.findUnique({
       where: { id },
       include: {
         participants: {
-          orderBy: [{ seed: "asc" }, { createdAt: "asc" }],
+          orderBy: [{ seed: "asc" }],
         },
         groups: true,
         matches: {
@@ -36,11 +38,13 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Hydrate groups with their participants & matches for easy frontend rendering
+    // Prepara (hidrata) os grupos com seus respectivos participantes e partidas para facilitar a renderização no frontend
     const formattedGroups = tournament.groups.map((grp) => {
+      // Filtra os participantes que pertencem a este grupo
       const groupParticipants = tournament.participants.filter(
         (p) => p.groupName === grp.name
       );
+      // Filtra as partidas que pertencem a este grupo
       const groupMatches = tournament.matches.filter(
         (m) => m.groupName === grp.name
       );
@@ -68,11 +72,14 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   }
 }
 
-// PUT /api/torneios/[id] - Update tournament details
+// Rota PUT para atualizar os detalhes do torneio
 export async function PUT(req: NextRequest, { params }: RouteParams) {
   try {
+    // Obtém o ID do torneio a partir dos parâmetros
     const { id } = await params;
+    // Extrai o corpo da requisição JSON
     const body = await req.json();
+    // Obtém os dados para atualização
     const {
       title,
       description,
@@ -86,6 +93,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
       format,
     } = body;
 
+    // Atualiza os dados do torneio no banco de dados
     const updated = await prisma.tournament.update({
       where: { id },
       data: {
@@ -112,9 +120,10 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
   }
 }
 
-// DELETE /api/torneios/[id] - Delete tournament
+// Rota DELETE para excluir o torneio
 export async function DELETE(req: NextRequest, { params }: RouteParams) {
   try {
+    // Obtém o ID do torneio a partir dos parâmetros
     const { id } = await params;
 
     await prisma.tournament.delete({

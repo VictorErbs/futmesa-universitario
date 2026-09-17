@@ -20,7 +20,7 @@ export const SocialCardModal: React.FC<SocialCardModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Find champion and finalists if finished
+  // Encontra o campeão e os finalistas se estiver finalizado
   const finalMatch = tournament.matches?.find(
     (m) =>
       (m.stage === "FINAL" || m.roundName?.toLowerCase().includes("final")) &&
@@ -78,7 +78,7 @@ export const SocialCardModal: React.FC<SocialCardModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm overflow-y-auto">
       <div className="relative w-full max-w-md rounded-3xl border border-amber-500/40 bg-collegiate-dark p-6 text-white shadow-2xl space-y-5 my-8">
-        {/* Close button */}
+        {/* Botão de Fechar */}
         <button
           onClick={onClose}
           className="absolute right-4 top-4 rounded-full bg-collegiate-surface p-2 text-slate-400 hover:text-white"
@@ -93,15 +93,15 @@ export const SocialCardModal: React.FC<SocialCardModalProps> = ({
           <h2 className="text-xl font-black">Divulgação Comunitária</h2>
         </div>
 
-        {/* The Card to be shared / screenshot */}
+        {/* O Cartão para ser compartilhado / screenshot */}
         <div
           id="social-story-card"
           className="relative overflow-hidden rounded-2xl border-2 border-amber-500/60 bg-gradient-to-b from-slate-900 via-emerald-950/80 to-slate-950 p-6 shadow-2xl text-center space-y-4"
         >
-          {/* Decorative Glow */}
+          {/* Brilho Decorativo */}
           <div className="absolute -top-10 left-1/2 -translate-x-1/2 h-32 w-48 bg-amber-500/20 blur-3xl pointer-events-none rounded-full" />
 
-          {/* Header */}
+          {/* Cabeçalho */}
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 border border-amber-500/40 px-3 py-0.5 text-[10px] font-black uppercase tracking-wider text-amber-300">
               <span>Circuito Futmesa Olinda/PE</span>
@@ -115,9 +115,9 @@ export const SocialCardModal: React.FC<SocialCardModalProps> = ({
             </p>
           </div>
 
-          {/* Podium / Highlights */}
+          {/* Pódio / Destaques */}
           <div className="space-y-2.5 pt-2">
-            {/* 1st Place */}
+            {/* 1º Lugar */}
             <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-amber-500/30 via-amber-400/20 to-amber-500/30 border border-amber-400/60 p-3 shadow-lg">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 text-left">
@@ -142,7 +142,7 @@ export const SocialCardModal: React.FC<SocialCardModalProps> = ({
               </div>
             </div>
 
-            {/* 2nd Place */}
+            {/* 2º Lugar */}
             {runnerUp && (
               <div className="rounded-xl bg-slate-800/80 border border-slate-700/80 p-2.5 flex items-center justify-between text-left">
                 <div className="flex items-center gap-2">
@@ -164,7 +164,7 @@ export const SocialCardModal: React.FC<SocialCardModalProps> = ({
               </div>
             )}
 
-            {/* 3rd Place */}
+            {/* 3º Lugar */}
             {thirdPlace && (
               <div className="rounded-xl bg-slate-800/60 border border-slate-700/60 p-2 flex items-center justify-between text-left">
                 <div className="flex items-center gap-2">
@@ -182,7 +182,7 @@ export const SocialCardModal: React.FC<SocialCardModalProps> = ({
             )}
           </div>
 
-          {/* Sponsors Footer on Card */}
+          {/* Rodapé de Patrocinadores no Cartão */}
           {tournament.sponsors && (
             <div className="pt-2 border-t border-collegiate-border/80">
               <span className="text-[9px] uppercase tracking-wider font-bold text-amber-300/80 block">
@@ -199,7 +199,7 @@ export const SocialCardModal: React.FC<SocialCardModalProps> = ({
           </div>
         </div>
 
-        {/* Action button */}
+        {/* Botão de Ação */}
         <div className="flex flex-col gap-2 pt-2">
           <button
             onClick={handleShareStory}

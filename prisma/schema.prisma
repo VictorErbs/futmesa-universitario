@@ -35,28 +35,16 @@ model Participant {
   tournament         Tournament      @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   name               String
   nickname           String?         // Vulgo / Apelido no bairro (ex: Dadá, Juninho)
-  partnerName        String?         // para duplas 2x2
-  partnerNickname    String?         // Apelido do parceiro
   neighborhood       String?         // Bairro de Olinda (ex: Rio Doce, Peixinhos, Bultrins)
   communityOrProject String?         // Equipe, Arena ou Projeto Social
-  phone              String?
-  email              String?
   seed               Int?
-  status             String          @default("PENDING") // 'CONFIRMED', 'PENDING', 'ELIMINATED'
-  phoneVerified      Boolean         @default(false)
-  verificationCode   String?
-  codeExpiresAt      DateTime?
   groupName          String?
-  createdAt          DateTime        @default(now())
   matchesAsP1        Match[]         @relation("Participant1")
   matchesAsP2        Match[]         @relation("Participant2")
   matchesWon         Match[]         @relation("Winner")
-
-  @@index([tournamentId])
-  @@index([status])
-  @@index([neighborhood])
-  @@index([phoneVerified])
 }
+
+
 
 model TournamentGroup {
   id           String     @id @default(uuid())
@@ -109,3 +97,9 @@ model MatchSet {
   @@index([matchId])
 }
 
+model Admin {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}

@@ -54,7 +54,7 @@ export interface StandingsResult {
 }
 
 /**
- * Checks if a set is completed according to MesaMatch rules
+ * Verifica se um set foi concluído de acordo com as regras do MesaMatch
  */
 export function evaluateSetWinner(
   score1: number,
@@ -82,8 +82,8 @@ export function evaluateSetWinner(
 }
 
 /**
- * Returns the maximum selectable points for a tournament to avoid unrealistic scores
- * while still allowing ample room for advantage/deuce.
+ * Retorna os pontos máximos selecionáveis para um torneio, evitando placares irreais
+ * e ainda permitindo espaço para vantagem/deuce.
  */
 export function getMaxPointsForTournament(pointsPerSet: number = 18): number {
   if (pointsPerSet <= 15) return 25;
@@ -92,7 +92,7 @@ export function getMaxPointsForTournament(pointsPerSet: number = 18): number {
 }
 
 /**
- * Backward-compatible alias
+ * Alias para compatibilidade com versões anteriores
  */
 export function isSetFinished(score1: number, score2: number, pointsPerSet: number = 18) {
   const res = evaluateSetWinner(score1, score2, pointsPerSet, true);
@@ -100,7 +100,7 @@ export function isSetFinished(score1: number, score2: number, pointsPerSet: numb
 }
 
 /**
- * Evaluates whether the match is won
+ * Avalia se a partida foi vencida
  */
 export function evaluateMatchWinner(
   sets: EngineMatchSet[],
@@ -147,7 +147,7 @@ export function evaluateMatchWinner(
 }
 
 /**
- * Check score state (Deuce, Advantage, Set Point)
+ * Verifica o estado da pontuação (Deuce, Vantagem, Set Point)
  */
 export function getScoreState(
   score1: number,
@@ -185,7 +185,7 @@ export function getScoreState(
 }
 
 /**
- * Computes standard tournament seeding order (e.g., [1,4,2,3] for 4, [1,8,4,5,2,7,3,6] for 8)
+ * Calcula a ordem padrão das chaves (seed) do torneio (ex: [1,4,2,3] para 4 participantes, [1,8,4,5,2,7,3,6] para 8)
  */
 export function getBracketSeedOrder(size: number): number[] {
   if (size === 2) return [1, 2];
@@ -240,7 +240,7 @@ export function getRoundDisplayName(stageOrRound: string | number, totalRounds?:
 }
 
 /**
- * Generates single elimination bracket matching tests
+ * Gera testes de chaveamento de eliminação simples
  */
 export function generateSingleEliminationBracket(
   participants: EngineParticipant[],
@@ -260,7 +260,7 @@ export function generateSingleEliminationBracket(
   const totalRounds = Math.log2(bracketSize);
   const seedOrder = getBracketSeedOrder(bracketSize);
 
-  // Map participants by seed or index
+  // Mapeia os participantes pelo seed (chave) ou índice
   const sortedParticipants = [...participants].sort(
     (a, b) => (a.seed ?? 999) - (b.seed ?? 999)
   );
@@ -300,7 +300,7 @@ export function generateSingleEliminationBracket(
     matchesByRound.push(currentRoundMatches);
   }
 
-  // Link progression (nextMatchId and nextMatchSlot)
+  // Vincula a progressão (nextMatchId e nextMatchSlot)
   for (let r = 0; r < totalRounds - 1; r++) {
     const currentRound = matchesByRound[r];
     const nextRound = matchesByRound[r + 1];
@@ -314,7 +314,7 @@ export function generateSingleEliminationBracket(
     }
   }
 
-  // Populate Round 1 with seeds
+  // Preenche a Rodada 1 com as posições (seeds)
   const round1 = matchesByRound[0];
   for (let i = 0; i < round1.length; i++) {
     const match = round1[i];
@@ -327,12 +327,12 @@ export function generateSingleEliminationBracket(
     match.participant1Id = p1 ? p1.id : null;
     match.participant2Id = p2 ? p2.id : null;
 
-    // Handle automatic BYE
+    // Lida com o BYE automático (avanço sem jogar)
     if (p1 && !p2) {
       match.winnerId = p1.id;
       match.status = "FINISHED";
 
-      // Advance to next round immediately
+      // Avança para a próxima rodada imediatamente
       if (match.nextMatchId && match.nextMatchSlot) {
         const next = allMatches.find((m) => m.id === match.nextMatchId);
         if (next) {
@@ -358,7 +358,7 @@ export function generateSingleEliminationBracket(
 }
 
 /**
- * Backward compatibility alias for UI components
+ * Alias de compatibilidade com versões anteriores para componentes de UI
  */
 export function generateKnockoutTree(participants: any[]) {
   const matches = generateSingleEliminationBracket(participants, 2, 18);
@@ -373,7 +373,7 @@ export function generateKnockoutTree(participants: any[]) {
 }
 
 /**
- * Advance winner in knockout bracket tree (supports setting winner or clearing slot if null)
+ * Avança o vencedor na árvore do chaveamento (suporta definir o vencedor ou limpar a vaga se for null)
  */
 export function advanceWinnerInBracket(
   matches: EngineMatch[],
@@ -421,7 +421,7 @@ export function advanceWinnerInBracket(
 }
 
 /**
- * Generate Groups and Round Robin matches
+ * Gera os grupos e as partidas de todos contra todos (Round Robin)
  */
 export function generateGroupsAndRoundRobin(
   participants: EngineParticipant[],
@@ -443,7 +443,7 @@ export function generateGroupsAndRoundRobin(
     });
   }
 
-  // Distribute participants in snake or round-robin style
+  // Distribui os participantes no estilo cobra (snake) ou todos contra todos
   participants.forEach((p, idx) => {
     const grpIdx = idx % numGroups;
     const groupName = groups[grpIdx].name;
@@ -478,7 +478,7 @@ export function generateGroupsAndRoundRobin(
 }
 
 /**
- * Calculates group standings table with tiebreakers
+ * Calcula a tabela de classificação dos grupos com critérios de desempate
  */
 export function calculateGroupStandings(
   groupParticipants: (EngineParticipant | ParticipantType)[],
@@ -577,7 +577,7 @@ export function calculateGroupStandings(
     };
   });
 
-  // Sort by: 1) Points, 2) setsDifference, 3) pointsDifference, 4) pointsWon
+  // Ordena por: 1) Pontos, 2) Saldo de Sets, 3) Saldo de Pontos, 4) Pontos Pró
   result.sort((a, b) => {
     if (b.points !== a.points) return b.points - a.points;
     if (b.setsDifference !== a.setsDifference) return b.setsDifference - a.setsDifference;
@@ -585,7 +585,7 @@ export function calculateGroupStandings(
     return b.pointsWon - a.pointsWon;
   });
 
-  // Mark G2 (top 2)
+  // Marca o G2 (2 melhores)
   result.forEach((row, idx) => {
     if (idx < 2 && row.played > 0) {
       row.isQualified = true;
@@ -596,7 +596,7 @@ export function calculateGroupStandings(
 }
 
 /**
- * Qualifies top teams from groups to Knockout Playoff matches
+ * Qualifica as melhores equipes dos grupos para os playoffs (mata-mata)
  */
 export function qualifyTopTeamsToKnockout(
   standingsByGroup: Record<string, StandingsResult[]>,

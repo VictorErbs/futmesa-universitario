@@ -10,6 +10,7 @@ interface PlayerScoreCardProps {
   onScoreChange: (delta: number) => void;
   disabledMinus?: boolean;
   isInLead?: boolean;
+  disabled?: boolean;
 }
 
 export const PlayerScoreCard: React.FC<PlayerScoreCardProps> = ({
@@ -20,6 +21,7 @@ export const PlayerScoreCard: React.FC<PlayerScoreCardProps> = ({
   onScoreChange,
   disabledMinus = false,
   isInLead = false,
+  disabled = false,
 }) => {
   return (
     <div
@@ -30,7 +32,7 @@ export const PlayerScoreCard: React.FC<PlayerScoreCardProps> = ({
           : "border-collegiate-border bg-gradient-to-b from-collegiate-surface/90 to-collegiate-dark shadow-black/40"
       )}
     >
-      {/* Subtle ambient light in the background */}
+      {/* Luz ambiente suave no fundo */}
       <div
         className={cn(
           "absolute -top-12 -right-12 w-32 h-32 rounded-full blur-3xl pointer-events-none opacity-40",
@@ -38,14 +40,14 @@ export const PlayerScoreCard: React.FC<PlayerScoreCardProps> = ({
         )}
       />
 
-      {/* Header with Side Label and Sets Counters */}
+      {/* Cabeçalho com o Rótulo do Lado e Contadores de Sets */}
       <div className="w-full text-center pb-1 sm:pb-2 z-10">
         <div className="flex items-center justify-between px-1 mb-1">
           <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-300/80">
             {sideLabel}
           </span>
 
-          {/* Visual Set Counter Dots */}
+          {/* Pontos Visuais do Contador de Sets */}
           <div className="flex items-center gap-1.5" title={`${setsWon} sets vencidos`}>
             <span className="text-[10px] font-bold text-amber-400/90 mr-0.5">SETS</span>
             {[0, 1].map((dotIdx) => (
@@ -67,7 +69,7 @@ export const PlayerScoreCard: React.FC<PlayerScoreCardProps> = ({
         </h3>
       </div>
 
-      {/* Giant LED Score Display */}
+      {/* Visor Gigante de Placar em LED */}
       <div className="my-1 sm:my-2.5 flex flex-col items-center justify-center z-10 select-none">
         <div className="relative">
           <span
@@ -84,12 +86,12 @@ export const PlayerScoreCard: React.FC<PlayerScoreCardProps> = ({
         </div>
       </div>
 
-      {/* Giant Touch Buttons */}
+      {/* Botões de Toque Gigantes */}
       <div className="w-full flex items-center gap-2 sm:gap-3 pt-1 sm:pt-2 z-10">
         <button
           type="button"
           onClick={() => onScoreChange(-1)}
-          disabled={disabledMinus}
+          disabled={disabled || disabledMinus}
           aria-label="Diminuir ponto"
           className="flex-1 flex items-center justify-center rounded-2xl border border-collegiate-border bg-collegiate-dark/90 py-2.5 sm:py-3.5 text-emerald-200/70 hover:text-white hover:bg-collegiate-surface active:scale-95 disabled:opacity-35 disabled:pointer-events-none transition-all shadow-md"
         >
@@ -99,9 +101,10 @@ export const PlayerScoreCard: React.FC<PlayerScoreCardProps> = ({
         <button
           type="button"
           onClick={() => onScoreChange(+1)}
+          disabled={disabled}
           aria-label="Aumentar ponto"
           className={cn(
-            "flex-[2.2] flex items-center justify-center rounded-2xl py-2.5 sm:py-3.5 font-black text-collegiate-dark active:scale-95 transition-all text-lg sm:text-xl border shadow-xl",
+            "flex-[2.2] flex items-center justify-center rounded-2xl py-2.5 sm:py-3.5 font-black text-collegiate-dark active:scale-95 transition-all text-lg sm:text-xl border shadow-xl disabled:opacity-35 disabled:pointer-events-none",
             isInLead
               ? "bg-amber-400 hover:bg-amber-300 border-amber-300 shadow-amber-900/40"
               : "bg-emerald-400 hover:bg-emerald-300 border-emerald-300 shadow-emerald-950/50"

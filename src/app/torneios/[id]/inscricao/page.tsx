@@ -50,7 +50,7 @@ export default function InscricaoPublicaPage({
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [resendSuccess, setResendSuccess] = useState(false);
 
-  // Stepper state
+  // Estado das etapas (stepper)
   const [step, setStep] = useState<RegistrationStep>("FORM");
   const [participantId, setParticipantId] = useState<string | null>(null);
   const [whatsappUrl, setWhatsappUrl] = useState<string>("");
@@ -107,6 +107,7 @@ export default function InscricaoPublicaPage({
     }
   };
 
+  // Função para iniciar a inscrição
   const handleStartRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -145,6 +146,7 @@ export default function InscricaoPublicaPage({
     }
   };
 
+  // Função para verificar o código numérico (OTP)
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setVerifyError(null);
@@ -187,6 +189,7 @@ export default function InscricaoPublicaPage({
     }
   };
 
+  // Função para solicitar o reenvio do código de verificação
   const handleResendCode = async () => {
     setIsSubmitting(true);
     setVerifyError(null);
@@ -228,14 +231,16 @@ export default function InscricaoPublicaPage({
     tournament?.modality === "DOUBLES" ||
     tournament?.modality === "2x2";
 
+  // URL base do torneio para facilitar o compartilhamento
   const hubUrl = typeof window !== "undefined" ? `${window.location.origin}/torneios/${tournamentId}` : "";
+  // Nome que será exibido (junta o nome real com o apelido, se houver)
   const displayName = formData.nickname
     ? `${formData.name} (${formData.nickname})`
     : formData.name;
 
   return (
     <div className="mx-auto max-w-xl px-4 py-8 sm:px-6">
-      {/* Top Back Link */}
+      {/* Link de voltar no topo */}
       <Link
         href={`/torneios/${tournamentId}`}
         className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-emerald-200/70 hover:text-amber-400 transition-colors mb-6"
@@ -244,9 +249,9 @@ export default function InscricaoPublicaPage({
         <span>Voltar ao Torneio</span>
       </Link>
 
-      {/* Main Card */}
+      {/* Cartão Principal */}
       <div className="rounded-3xl border border-collegiate-border bg-collegiate-surface/95 p-6 sm:p-8 shadow-2xl backdrop-blur">
-        {/* Tournament Summary Header */}
+        {/* Cabeçalho de Resumo do Torneio */}
         <div className="border-b border-collegiate-border/80 pb-5 mb-6 text-center space-y-2">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-md">
             <Trophy className="h-6 w-6" />
@@ -275,7 +280,7 @@ export default function InscricaoPublicaPage({
             )}
           </div>
 
-          {/* Stepper Indicators */}
+          {/* Indicadores de Etapa (Stepper) */}
           <div className="flex items-center justify-center gap-2 pt-2">
             <div
               className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold ${
@@ -311,7 +316,7 @@ export default function InscricaoPublicaPage({
           </div>
         </div>
 
-        {/* STEP 2: OTP Phone Verification */}
+        {/* ETAPA 2: Verificação OTP do Telefone */}
         {step === "VERIFY" && (
           <div className="py-2 space-y-6">
             <div className="text-center space-y-2">
@@ -349,7 +354,7 @@ export default function InscricaoPublicaPage({
               </div>
             )}
 
-            {/* Direct WhatsApp Self-Message Banner */}
+            {/* Banner para envio de mensagem direta no próprio WhatsApp */}
             <div className="rounded-2xl border border-emerald-500/40 bg-emerald-950/30 p-5 space-y-3">
               <div className="flex items-start gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 shrink-0">
@@ -378,7 +383,7 @@ export default function InscricaoPublicaPage({
               )}
             </div>
 
-            {/* OTP Verification Form */}
+            {/* Formulário de Verificação OTP */}
             <form onSubmit={handleVerifyOtp} className="space-y-4 pt-1">
               <div className="space-y-2 text-center">
                 <label
@@ -432,7 +437,7 @@ export default function InscricaoPublicaPage({
           </div>
         )}
 
-        {/* STEP 3: Success Confirmation State */}
+        {/* ETAPA 3: Confirmação de Sucesso */}
         {step === "SUCCESS" && (
           <div className="py-6 text-center space-y-5">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-lg">
@@ -449,7 +454,7 @@ export default function InscricaoPublicaPage({
               </p>
             </div>
 
-            {/* WhatsApp Share Button */}
+            {/* Botão de Compartilhamento no WhatsApp */}
             <div className="pt-2">
               <a
                 href={generateRegistrationShareWhatsApp({
@@ -497,7 +502,7 @@ export default function InscricaoPublicaPage({
           </div>
         )}
 
-        {/* STEP 1: Registration Form */}
+        {/* ETAPA 1: Formulário de Inscrição */}
         {step === "FORM" && (
           <form onSubmit={handleStartRegistration} className="space-y-4">
             {error && (
@@ -680,7 +685,7 @@ export default function InscricaoPublicaPage({
               />
             </div>
 
-            {/* Submit Button */}
+            {/* Botão de Envio */}
             <button
               type="submit"
               disabled={isSubmitting}

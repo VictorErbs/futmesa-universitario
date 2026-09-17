@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateMatchScoreAndAdvance, SetScoreInput } from "@/lib/match-service";
+import { isAdmin } from "@/lib/auth";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-// POST /api/partidas/[id]/resultado - Save match result, update database and propagate winner
 export async function POST(req: NextRequest, { params }: RouteParams) {
   try {
+    if (!(await isAdmin())) {
+      return NextResponse.json(
+        { error: "Apenas administradores podem registrar o resultado." },
+        { status: 403 }
+      );
+    }
+
     const { id } = await params;
     const body = await req.json();
     const { sets, setNumber, score1, score2, isFinished } = body;

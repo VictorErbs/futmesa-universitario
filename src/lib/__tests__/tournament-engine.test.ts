@@ -23,58 +23,58 @@ describe('Tournament Engine', () => {
 
   describe('evaluateSetWinner', () => {
     it('finishes set when reaching target points with 2-point difference (advantageRule = true)', () => {
-      // 18x16 finishes with winner 1
+      // 18x16 finaliza com vencedor 1
       const res1 = evaluateSetWinner(18, 16, 18, true)
       expect(res1.isFinished).toBe(true)
       expect(res1.winner).toBe(1)
 
-      // 16x18 finishes with winner 2
+      // 16x18 finaliza com vencedor 2
       const res2 = evaluateSetWinner(16, 18, 18, true)
       expect(res2.isFinished).toBe(true)
       expect(res2.winner).toBe(2)
 
-      // 18x10 finishes with winner 1
+      // 18x10 finaliza com vencedor 1
       const res3 = evaluateSetWinner(18, 10, 18, true)
       expect(res3.isFinished).toBe(true)
       expect(res3.winner).toBe(1)
     })
 
     it('does not finish set if difference is less than 2 at or above target points', () => {
-      // 18x17 must continue
+      // 18x17 deve continuar
       const res1 = evaluateSetWinner(18, 17, 18, true)
       expect(res1.isFinished).toBe(false)
       expect(res1.winner).toBe(null)
 
-      // 19x18 must continue
+      // 19x18 deve continuar
       const res2 = evaluateSetWinner(19, 18, 18, true)
       expect(res2.isFinished).toBe(false)
       expect(res2.winner).toBe(null)
     })
 
     it('finishes set in deuce when advantage of 2 is achieved', () => {
-      // 20x18 finishes with winner 1
+      // 20x18 finaliza com vencedor 1
       const res1 = evaluateSetWinner(20, 18, 18, true)
       expect(res1.isFinished).toBe(true)
       expect(res1.winner).toBe(1)
 
-      // 21x23 finishes with winner 2
+      // 21x23 finaliza com vencedor 2
       const res2 = evaluateSetWinner(21, 23, 18, true)
       expect(res2.isFinished).toBe(true)
       expect(res2.winner).toBe(2)
     })
 
     it('handles advantageRule = false correctly', () => {
-      // 18x17 finishes immediately without advantage rule
+      // 18x17 finaliza imediatamente sem a regra de vantagem
       const res1 = evaluateSetWinner(18, 17, 18, false)
       expect(res1.isFinished).toBe(true)
       expect(res1.winner).toBe(1)
 
-      // 17x18 finishes with winner 2
+      // 17x18 finaliza com vencedor 2
       const res2 = evaluateSetWinner(17, 18, 18, false)
       expect(res2.isFinished).toBe(true)
       expect(res2.winner).toBe(2)
 
-      // 17x17 not finished
+      // 17x17 não finalizado
       const res3 = evaluateSetWinner(17, 17, 18, false)
       expect(res3.isFinished).toBe(false)
       expect(res3.winner).toBe(null)
@@ -156,7 +156,7 @@ describe('Tournament Engine', () => {
       expect(round1[0].stage).toBe('SEMI_FINALS')
       expect(finalRound[0].stage).toBe('FINAL')
 
-      // Semis connect to Final
+      // Semifinais se conectam à Final
       expect(round1[0].nextMatchId).toBe(finalRound[0].id)
       expect(round1[0].nextMatchSlot).toBe(1)
       expect(round1[1].nextMatchId).toBe(finalRound[0].id)
@@ -181,11 +181,11 @@ describe('Tournament Engine', () => {
       expect(sf).toHaveLength(2)
       expect(fn).toHaveLength(1)
 
-      // Match 1: Seed 1 vs Seed 8
+      // Partida 1: Chave 1 vs Chave 8
       expect(qf[0].participant1Id).toBe('p1')
       expect(qf[0].participant2Id).toBe('p8')
 
-      // Check progression links
+      // Verifica os links de progressão
       expect(qf[0].nextMatchId).toBe(sf[0].id)
       expect(qf[0].nextMatchSlot).toBe(1)
       expect(qf[1].nextMatchId).toBe(sf[0].id)
@@ -193,7 +193,7 @@ describe('Tournament Engine', () => {
     })
 
     it('handles odd participants with automatic BYEs', () => {
-      // 5 participants in an 8-bracket (3 BYEs)
+      // 5 participantes em um chaveamento de 8 (3 BYEs)
       const participants = [
         { id: 'p1', name: 'Dupla 1', seed: 1 },
         { id: 'p2', name: 'Dupla 2', seed: 2 },
@@ -205,7 +205,7 @@ describe('Tournament Engine', () => {
       const matches = generateSingleEliminationBracket(participants, 2, 18)
       expect(matches).toHaveLength(7)
 
-      // QF1: Seed 1 vs BYE -> P1 auto wins and moves to Semi 1 slot 1
+      // Quartas 1: Chave 1 vs BYE -> P1 ganha automaticamente e vai para Semi 1, vaga 1
       const qf1 = matches.find((m) => m.round === 1 && m.matchNumber === 1)!
       expect(qf1.participant1Id).toBe('p1')
       expect(qf1.participant2Id).toBeNull()
@@ -238,12 +238,12 @@ describe('Tournament Engine', () => {
       expect(groups[0].participants).toHaveLength(4)
       expect(groups[1].participants).toHaveLength(4)
 
-      // In 4-team round-robin: C(4,2) = 6 matches per group -> 12 matches total
+      // Em um grupo de 4: C(4,2) = 6 partidas por grupo -> 12 partidas no total
       expect(matches).toHaveLength(12)
       expect(matches.filter((m) => m.groupName === 'Grupo A')).toHaveLength(6)
       expect(matches.filter((m) => m.groupName === 'Grupo B')).toHaveLength(6)
 
-      // Verify every pair in Grupo A plays exactly once
+      // Verifica se todos do Grupo A jogam entre si exatamente uma vez
       const groupAPairings = new Set<string>()
       matches
         .filter((m) => m.groupName === 'Grupo A')
@@ -262,7 +262,7 @@ describe('Tournament Engine', () => {
 
       const { groups, matches } = generateGroupsAndRoundRobin(participants, 3, 2, 18)
       expect(groups).toHaveLength(2)
-      // 3 teams per group: C(3,2) = 3 matches per group -> 6 total matches
+      // 3 times por grupo: C(3,2) = 3 partidas por grupo -> 6 partidas no total
       expect(matches).toHaveLength(6)
     })
   })
@@ -275,9 +275,9 @@ describe('Tournament Engine', () => {
         { id: 'p3', name: 'Time Gama', groupName: 'Grupo A' }
       ]
 
-      // Match 1: Alpha vs Beta -> Alpha wins 2-0 (18-10, 18-12)
-      // Match 2: Alpha vs Gama -> Alpha wins 2-1 (18-14, 15-18, 18-16)
-      // Match 3: Beta vs Gama -> Beta wins 2-0 (18-14, 18-15)
+      // Partida 1: Alpha vs Beta -> Alpha ganha de 2 a 0 (18-10, 18-12)
+      // Partida 2: Alpha vs Gama -> Alpha ganha de 2 a 1 (18-14, 15-18, 18-16)
+      // Partida 3: Beta vs Gama -> Beta ganha de 2 a 0 (18-14, 18-15)
       const groupMatches = [
         {
           participant1Id: 'p1',
@@ -316,7 +316,7 @@ describe('Tournament Engine', () => {
 
       expect(standings).toHaveLength(3)
 
-      // 1st place: Alpha (2 wins, 6 points)
+      // 1º lugar: Alpha (2 vitórias, 6 pontos)
       expect(standings[0].participantId).toBe('p1')
       expect(standings[0].played).toBe(2)
       expect(standings[0].won).toBe(2)
@@ -326,13 +326,13 @@ describe('Tournament Engine', () => {
       expect(standings[0].setsLost).toBe(1)
       expect(standings[0].setsDifference).toBe(3)
 
-      // 2nd place: Beta (1 win, 3 points)
+      // 2º lugar: Beta (1 vitória, 3 pontos)
       expect(standings[1].participantId).toBe('p2')
       expect(standings[1].won).toBe(1)
       expect(standings[1].lost).toBe(1)
       expect(standings[1].points).toBe(3)
 
-      // 3rd place: Gama (0 wins, 0 points)
+      // 3º lugar: Gama (0 vitórias, 0 pontos)
       expect(standings[2].participantId).toBe('p3')
       expect(standings[2].won).toBe(0)
       expect(standings[2].lost).toBe(2)
@@ -345,7 +345,7 @@ describe('Tournament Engine', () => {
         { id: 'p2', name: 'Time 2', groupName: 'Grupo A' }
       ]
 
-      // Both have 3 points and 1 win, but p1 has better set difference
+      // Ambos têm 3 pontos e 1 vitória, mas p1 tem melhor saldo de sets
       const matches = [
         {
           participant1Id: 'p1',
@@ -522,7 +522,7 @@ describe('Tournament Engine', () => {
       expect(updatedFinal.participant1Id).toBe('team-1')
       expect(updatedFinal.participant2Id).toBeNull()
 
-      // When winner is cleared (e.g., score reduced)
+      // Quando o vencedor é removido (ex: pontuação reduzida)
       const cleared = advanceWinnerInBracket(updated, 'semi-1', null)
       const clearedSemi = cleared.find((m) => m.id === 'semi-1')!
       const clearedFinal = cleared.find((m) => m.id === 'final-1')!

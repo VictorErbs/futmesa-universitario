@@ -5,11 +5,14 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-// POST /api/torneios/[id]/inscricao/verificar - Verify participant OTP code
+// Rota POST para verificar o código numérico (OTP) do participante
 export async function POST(req: NextRequest, { params }: RouteParams) {
   try {
+    // Obtém o ID do torneio a partir dos parâmetros
     const { id } = await params;
+    // Obtém os dados enviados no corpo da requisição
     const body = await req.json();
+    // Extrai o ID do participante e o código
     const { participantId, code } = body;
 
     if (!participantId || !code) {
@@ -19,6 +22,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       );
     }
 
+    // Busca a inscrição do participante no banco de dados
     const participant = await prisma.participant.findUnique({
       where: { id: participantId },
     });
@@ -41,7 +45,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Check expiration
+    // Verifica se o tempo de validade do código já expirou
     if (participant.codeExpiresAt && new Date(participant.codeExpiresAt) < new Date()) {
       return NextResponse.json(
         { error: "Código expirado! Solicite um novo código de confirmação." },
@@ -49,8 +53,10 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Check code match (trim & ignore dashes/spaces)
+    // Verifica se os códigos batem (ignora espaços, traços e foca só nos números)
+    // Limpa o código digitado
     const cleanInputCode = code.toString().replace(/\D/g, "").trim();
+    // Limpa o código salvo no banco de dados
     const cleanSavedCode = (participant.verificationCode || "").replace(/\D/g, "").trim();
 
     if (cleanInputCode !== cleanSavedCode) {
@@ -60,7 +66,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Mark as confirmed and verified
+    // Marca o participante como confirmado e com telefone verificado
     const updated = await prisma.participant.update({
       where: { id: participantId },
       data: {

@@ -34,7 +34,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
       await navigator.clipboard.writeText(text);
       return true;
     } catch {
-      // Fallback below if writeText fails
+      // Fallback abaixo caso o writeText falhe
     }
   }
 

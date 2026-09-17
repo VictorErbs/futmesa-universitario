@@ -29,9 +29,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 }) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Left / Main Overview Info */}
+      {/* Esquerda / Informações Principais da Visão Geral */}
       <div className="lg:col-span-2 space-y-6">
-        {/* Quick Summary Card */}
+        {/* Cartão de Resumo Rápido */}
         <div className="rounded-2xl border border-collegiate-border bg-collegiate-surface/90 p-6 space-y-4 shadow-md">
           <h3 className="text-lg font-black text-white flex items-center gap-2">
             <Trophy className="h-5 w-5 text-amber-400" />
@@ -69,7 +69,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           </div>
         </div>
 
-        {/* Rules Summary */}
+        {/* Resumo das Regras */}
         <div className="rounded-2xl border border-collegiate-border bg-collegiate-surface/90 p-6 space-y-3 shadow-md">
           <h3 className="text-base font-black text-amber-300">Regras Oficiais do MesaMatch Aplicadas</h3>
           <ul className="space-y-2 text-xs sm:text-sm text-emerald-100/80 list-disc list-inside">
@@ -81,7 +81,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
         </div>
       </div>
 
-      {/* Right / Quick Share & Stats Sidebar */}
+      {/* Direita / Barra Lateral de Compartilhamento Rápido e Estatísticas */}
       <div className="space-y-6">
         <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-b from-amber-950/30 to-collegiate-dark p-6 space-y-4 shadow-lg">
           <h3 className="text-base font-bold text-white flex items-center gap-2">
@@ -111,7 +111,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           </div>
         </div>
 
-        {/* Quick Status Stats */}
+        {/* Estatísticas Rápidas de Status */}
         <div className="rounded-2xl border border-collegiate-border bg-collegiate-surface/90 p-5 space-y-3 text-xs shadow-md">
           <h4 className="font-bold uppercase tracking-wider text-amber-300">Resumo do Torneio</h4>
           <div className="flex items-center justify-between py-1 border-b border-collegiate-border">

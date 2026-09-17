@@ -18,6 +18,8 @@ interface MatchCardProps {
   match: MatchType;
   tournamentTitle?: string;
   onOpenScoreboard?: (match: MatchType) => void;
+  isAdmin?: boolean;
+  onDeleteMatch?: (id: string) => void;
   compact?: boolean;
 }
 
@@ -25,6 +27,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   match,
   tournamentTitle = "Campeonato de Futmesa",
   onOpenScoreboard,
+  isAdmin = false,
+  onDeleteMatch,
   compact = false,
 }) => {
   const p1Name = match.participant1
@@ -107,6 +111,28 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           )}
         </div>
       </div>
+
+      <div className="mt-3 pt-2.5 border-t border-collegiate-border/60 flex items-center justify-between gap-2">
+  {/* Botão de Excluir: APENAS ADMIN */}
+  {isAdmin && onDeleteMatch && (
+    <button
+      onClick={() => onDeleteMatch(match.id)}
+      className="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 rounded border border-rose-500/30 hover:bg-rose-500/10"
+      title="Excluir partida"
+    >
+      Excluir
+    </button>
+  )}
+  {/* Botão de Placar: Texto muda conforme permissão */}
+  {onOpenScoreboard && (
+    <button
+      onClick={() => onOpenScoreboard(match)}
+      className="ml-auto text-xs font-bold text-amber-300 bg-amber-950/40 border border-amber-500/40 rounded-lg px-2.5 py-1"
+    >
+      {isAdmin ? "Gerenciar Placar" : "Visualizar Placar"}
+    </button>
+  )}
+</div>
 
       {/* Participants & Scores */}
       <div className="space-y-2">

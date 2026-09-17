@@ -56,7 +56,7 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
       setUpdatingMatchId(null);
     }
   };
-  // Filter only playoff/knockout matches (exclude group-only matches if any)
+  // Filtra apenas as partidas eliminatórias (exclui as de fase de grupos, se houver)
   const knockoutMatches = matches
     .filter((m) => !m.groupId && (!m.stage || m.stage !== "GROUPS"))
     .sort((a, b) => a.round - b.round || (a.matchNumber || 0) - (b.matchNumber || 0));
@@ -77,13 +77,13 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
 
   const totalRounds = Math.max(...knockoutMatches.map((m) => m.round));
 
-  // Find champion if final match is finished
+  // Encontra o campeão se a partida final estiver finalizada
   const finalMatch = knockoutMatches.find(
     (m) => (m.stage === "FINAL" || m.round === totalRounds) && (m.status === "FINISHED" || m.status === "FINALIZADA")
   );
   const champion = finalMatch?.winner;
 
-  // Group matches by round
+  // Agrupa as partidas por rodada
   const roundsMap = new Map<number, { name: string; matches: MatchType[] }>();
   knockoutMatches.forEach((m) => {
     if (!roundsMap.has(m.round)) {
@@ -102,7 +102,7 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
 
   return (
     <div className="w-full space-y-6">
-      {/* Champion Celebration Banner if tournament has a winner */}
+      {/* Banner de Celebração do Campeão (se o torneio tiver um vencedor) */}
       {champion && (
         <div className="rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-amber-500/20 via-amber-900/30 to-amber-500/20 p-4 sm:p-5 text-center shadow-xl shadow-amber-950/40 backdrop-blur animate-score-pop">
           <div className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-3 py-1 text-xs font-black text-collegiate-dark uppercase tracking-widest mb-2 shadow">
@@ -118,7 +118,7 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
         </div>
       )}
 
-      {/* Live Bracket Interactive Info Bar */}
+      {/* Barra de Informações Interativa do Chaveamento ao Vivo */}
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-collegiate-surface/80 border border-collegiate-border text-xs text-emerald-100/90 shadow-sm">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-amber-400 shrink-0" />
@@ -133,7 +133,7 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
         </div>
       </div>
 
-      {/* Horizontal Bracket Tree Container */}
+      {/* Contêiner da Árvore de Chaveamento Horizontal */}
       <div className="w-full overflow-x-auto pb-8 pt-2">
         <div className="inline-flex min-w-full items-stretch gap-8 sm:gap-12 px-2 sm:px-4">
           {rounds.map(([roundNum, roundData], roundIndex) => {
@@ -144,7 +144,7 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
                 key={roundNum}
                 className="flex flex-col min-w-[280px] max-w-[320px] shrink-0"
               >
-                {/* Round Header Card */}
+                {/* Cartão de Cabeçalho da Rodada */}
                 <div
                   className={cn(
                     "mb-6 flex items-center justify-between rounded-xl px-4 py-2.5 border shadow-md transition-all",
@@ -171,7 +171,7 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
                   </span>
                 </div>
 
-                {/* Matches column */}
+                {/* Coluna de Partidas */}
                 <div className="flex flex-col justify-around flex-grow gap-6 sm:gap-8">
                   {roundData.matches.map((match) => {
                     const p1 = match.participant1;
@@ -216,7 +216,7 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
                             : "border-collegiate-border bg-collegiate-surface/85 hover:border-amber-400/40 hover:bg-collegiate-surface"
                         )}
                       >
-                        {/* Match Header Meta */}
+                        {/* Meta-informações do Cabeçalho da Partida */}
                         <div
                           className={cn(
                             "flex items-center justify-between border-b px-3.5 py-2 text-[11px] font-bold",
@@ -251,7 +251,7 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
                           ) : null}
                         </div>
 
-                        {/* Team 1 Row */}
+                        {/* Linha da Equipe 1 */}
                         <div
                           className={cn(
                             "flex items-center justify-between border-b border-collegiate-border/60 px-3.5 py-2.5 text-xs transition-colors",
@@ -274,7 +274,7 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
                             </span>
                           </div>
 
-                          {/* Scores per set */}
+                          {/* Pontos por set */}
                           <div className="flex items-center gap-1.5 font-mono font-bold shrink-0">
                             {p1 && p2 && !isBye ? (
                               displaySets.map((s, idx) => {
@@ -328,7 +328,7 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
                           </div>
                         </div>
 
-                        {/* Team 2 Row */}
+                        {/* Linha da Equipe 2 */}
                         <div
                           className={cn(
                             "flex items-center justify-between px-3.5 py-2.5 text-xs transition-colors",
@@ -351,7 +351,7 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
                             </span>
                           </div>
 
-                          {/* Scores per set */}
+                          {/* Pontos por set */}
                           <div className="flex items-center gap-1.5 font-mono font-bold shrink-0">
                             {p1 && p2 && !isBye ? (
                               displaySets.map((s, idx) => {
@@ -405,7 +405,7 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
                           </div>
                         </div>
 
-                        {/* Scoreboard trigger */}
+                        {/* Gatilho para abrir o placar */}
                         {onOpenScoreboard && !isBye && (
                           <button
                             type="button"

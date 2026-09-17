@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 
-// GET /api/torneios - List all tournaments with participant & match counts
+// Rota GET para listar todos os torneios com a contagem de participantes e partidas
 export async function GET() {
   try {
+    // Busca a lista de torneios no banco de dados, ordenados pelo mais recente
     const tournaments = await prisma.tournament.findMany({
       orderBy: { createdAt: "desc" },
       include: {
@@ -26,10 +27,12 @@ export async function GET() {
   }
 }
 
-// POST /api/torneios - Create a new tournament
+// Rota POST para criar um novo torneio
 export async function POST(req: NextRequest) {
   try {
+    // Extrai o corpo da requisição JSON
     const body = await req.json();
+    // Extrai os dados do novo torneio
     const {
       title,
       description,
@@ -53,17 +56,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Define a modalidade garantindo que o valor seja válido (INDIVIDUAL ou DOUBLES)
     const normalizedModality =
       modality === "INDIVIDUAL" || modality === "1x1" ? "INDIVIDUAL" : "DOUBLES";
 
+    // Define o formato do torneio garantindo que o valor seja válido
     const normalizedFormat =
       format === "GRUPOS_E_MATA_MATA" || format === "GROUPS_AND_KNOCKOUT"
         ? "GROUPS_AND_KNOCKOUT"
         : "SINGLE_ELIMINATION";
 
+    // Calcula a quantidade de sets para vencer, caso não seja provida diretamente
     const calculatedSetsToWin =
       setsToWin !== undefined ? Number(setsToWin) : Number(maxSets) === 1 ? 1 : 2;
 
+    // Cria o novo torneio no banco de dados
     const tournament = await prisma.tournament.create({
       data: {
         title: title.trim(),

@@ -32,17 +32,10 @@ export interface ParticipantType {
   partnerNickname?: string | null;
   neighborhood?: string | null;
   communityOrProject?: string | null;
-  phone?: string | null;
-  email?: string | null;
   seed?: number | null;
-  status: string;
-  phoneVerified?: boolean;
-  verificationCode?: string | null;
-  codeExpiresAt?: Date | string | null;
   tournamentId: string;
   groupId?: string | null;
   groupName?: string | null;
-  createdAt: Date | string;
 }
 
 export interface MatchSetType {

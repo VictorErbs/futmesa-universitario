@@ -16,10 +16,11 @@ import {
 import { formatDateShort, cn } from "@/lib/utils";
 import { BAIRROS_OLINDA } from "@/lib/olinda";
 
-// Server Component with dynamic data loading
+// Componente de Servidor (Server Component) com carregamento dinâmico de dados
 export const revalidate = 0;
 
 export default async function HomePage() {
+  // Busca os torneios ordenados por data de criação
   const tournaments = await prisma.tournament.findMany({
     orderBy: { createdAt: "desc" },
     include: {
@@ -32,8 +33,11 @@ export default async function HomePage() {
     },
   });
 
+  // Conta o total de participantes
   const totalParticipants = await prisma.participant.count();
+  // Conta o total de partidas
   const totalMatches = await prisma.match.count();
+  // Filtra torneios ativos
   const activeTournamentsCount = tournaments.filter(
     (t) =>
       t.status === "EM_ANDAMENTO" ||
@@ -44,9 +48,9 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col gap-10 pb-16">
-      {/* Hero Banner with Olinda Community focus */}
+      {/* Banner Principal com foco na comunidade de Olinda */}
       <section className="relative overflow-hidden border-b border-collegiate-border/80 bg-gradient-to-b from-collegiate-dark via-collegiate-surface/50 to-collegiate-dark px-4 py-16 sm:px-6 lg:px-8 arena-grid-pattern">
-        {/* Glow ambient background */}
+        {/* Fundo com brilho ambiente */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 h-80 w-3/4 max-w-4xl bg-amber-500/15 blur-[130px] pointer-events-none -z-10 rounded-full" />
 
         <div className="mx-auto max-w-5xl text-center space-y-6">
@@ -84,7 +88,7 @@ export default async function HomePage() {
             </a>
           </div>
 
-          {/* Quick neighborhood tags */}
+          {/* Tags rápidas de bairros */}
           <div className="flex flex-wrap items-center justify-center gap-2 pt-4 text-xs font-semibold text-emerald-200/70">
             <span className="text-amber-400 font-black uppercase tracking-wider">Pólos:</span>
             {["Rio Doce", "Peixinhos", "Bultrins", "Alto da Sé", "Sítio Novo", "Jardim Brasil", "Amaro Branco", "Ouro Preto", "Casa Caiada"].map((b) => (
@@ -96,7 +100,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Stats Counter Bar */}
+      {/* Barra de Contadores de Estatísticas */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full -mt-6">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="flex items-center gap-4 rounded-2xl border border-collegiate-border bg-collegiate-surface/90 p-5 shadow-lg backdrop-blur">
@@ -143,7 +147,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Tournaments Grid Section */}
+      {/* Seção de Grade de Torneios */}
       <section id="torneios-section" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full space-y-6 pt-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-collegiate-border pb-4">
           <div>
@@ -218,7 +222,7 @@ export default async function HomePage() {
                   )}
                 >
                   <div className="space-y-4">
-                    {/* Header Badges */}
+                    {/* Emblemas do Cabeçalho */}
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="rounded-lg bg-collegiate-dark/90 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-amber-300 border border-amber-400/30 shadow-inner">
@@ -251,7 +255,7 @@ export default async function HomePage() {
                       </div>
                     </div>
 
-                    {/* Title & Description */}
+                    {/* Título e Descrição */}
                     <div>
                       <h3 className="text-xl font-black text-white group-hover:text-amber-400 transition-colors line-clamp-1 tracking-tight">
                         {torneio.title}
@@ -263,7 +267,7 @@ export default async function HomePage() {
                       )}
                     </div>
 
-                    {/* Sponsors badge if exists */}
+                    {/* Emblema de patrocinadores (se houver) */}
                     {torneio.sponsors && (
                       <div className="flex items-center gap-2 text-xs font-semibold text-amber-300/90 bg-amber-950/40 rounded-xl px-3 py-1.5 border border-amber-500/30">
                         <Store className="h-3.5 w-3.5 text-amber-400 shrink-0" />
@@ -271,7 +275,7 @@ export default async function HomePage() {
                       </div>
                     )}
 
-                    {/* Meta info: Format, Rules, Location, Date */}
+                    {/* Informações: Formato, Regras, Local, Data */}
                     <div className="space-y-2 pt-3 border-t border-collegiate-border/70 text-xs font-medium text-emerald-200/80">
                       <div className="flex items-center gap-2">
                         <Trophy className="h-4 w-4 text-amber-400 shrink-0" />
@@ -300,7 +304,7 @@ export default async function HomePage() {
                     </div>
                   </div>
 
-                  {/* Footer with counts and link button */}
+                  {/* Rodapé com contagens e botão de link */}
                   <div className="mt-6 pt-3.5 border-t border-collegiate-border/70 flex items-center justify-between">
                     <div className="flex items-center gap-3 text-xs text-emerald-200/90 font-bold">
                       <span>👥 {torneio._count.participants} atletas</span>
