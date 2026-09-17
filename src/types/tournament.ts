@@ -32,6 +32,7 @@ export interface ParticipantType {
   partnerNickname?: string | null;
   neighborhood?: string | null;
   communityOrProject?: string | null;
+  phone?: string | null;
   seed?: number | null;
   tournamentId: string;
   groupId?: string | null;

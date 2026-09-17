@@ -37,16 +37,13 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Filtra apenas os participantes confirmados para o sorteio
-    const participants = tournament.participants.filter(
-      (p) => p.status === "CONFIRMED"
-    );
+    // Obtém os participantes do torneio
+    const participants = tournament.participants;
 
     if (participants.length < 2) {
       return NextResponse.json(
         {
-          error:
-            "São necessários pelo menos 2 participantes com inscrição confirmada e WhatsApp validado para realizar o sorteio.",
+          error: "São necessários pelo menos 2 participantes para realizar o sorteio.",
         },
         { status: 400 }
       );
