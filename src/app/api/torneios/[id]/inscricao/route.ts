@@ -49,7 +49,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
     // Cria o novo participante no banco de dados
     const participant = await prisma.participant.create({
-      data: {
+      data: { 
         name: name.trim(),
         nickname: nickname?.trim() || null,
         neighborhood: neighborhood?.trim() || null,

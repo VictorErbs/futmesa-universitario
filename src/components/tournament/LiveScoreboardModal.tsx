@@ -264,8 +264,9 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
             <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => dispatch({ type: "TOGGLE_SWAP" })}
+                disabled={!isAdmin}
                 title="Inverter Lados da Mesa"
-                className="flex items-center gap-1.5 rounded-xl border border-collegiate-border bg-collegiate-surface/90 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-bold text-emerald-100/90 hover:bg-collegiate-surfaceHover hover:border-amber-400/50 transition-colors shadow-sm whitespace-nowrap shrink-0"
+                className="flex items-center gap-1.5 rounded-xl border border-collegiate-border bg-collegiate-surface/90 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-bold text-emerald-100/90 hover:bg-collegiate-surfaceHover hover:border-amber-400/50 disabled:opacity-30 disabled:pointer-events-none transition-colors shadow-sm whitespace-nowrap shrink-0"
               >
                 <ArrowLeftRight className="h-3.5 w-3.5 text-amber-400" />
                 <span className="hidden sm:inline">Inverter Lados</span>
