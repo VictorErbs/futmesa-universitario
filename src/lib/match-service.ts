@@ -37,127 +37,113 @@ export async function updateMatchScoreAndAdvance(
   const advantageRule = match.tournament.advantageRule;
   const maxScore = getMaxPointsForTournament(pointsPerSet);
 
-  // Atualiza ou insere cada set com a pontuação limitada ao valor máximo (maxScore)
-  for (const s of setsInput) {
+  // Calcula scores e avaliações antes da transação
+  const setOps = setsInput.map((s) => {
     const clampedScore1 = Math.min(maxScore, Math.max(0, Number(s.score1) || 0));
     const clampedScore2 = Math.min(maxScore, Math.max(0, Number(s.score2) || 0));
     const setEval = evaluateSetWinner(clampedScore1, clampedScore2, pointsPerSet, advantageRule);
-
     const existingSet = match.sets.find((es) => es.setNumber === Number(s.setNumber));
-    if (existingSet) {
-      await prisma.matchSet.update({
-        where: { id: existingSet.id },
-        data: {
-          score1: clampedScore1,
-          score2: clampedScore2,
-          isFinished: s.isFinished !== undefined ? Boolean(s.isFinished) : setEval.isFinished,
-        },
-      });
-    } else {
-      await prisma.matchSet.create({
-        data: {
-          matchId,
-          setNumber: Number(s.setNumber),
-          score1: clampedScore1,
-          score2: clampedScore2,
-          isFinished: s.isFinished !== undefined ? Boolean(s.isFinished) : setEval.isFinished,
-        },
-      });
+    return { s, clampedScore1, clampedScore2, setEval, existingSet };
+  });
+
+  // Executa todas as writes atomicamente
+  await prisma.$transaction(async (tx) => {
+    // Atualiza ou insere cada set com a pontuação limitada ao valor máximo (maxScore)
+    for (const { s, clampedScore1, clampedScore2, setEval, existingSet } of setOps) {
+      if (existingSet) {
+        await tx.matchSet.update({
+          where: { id: existingSet.id },
+          data: {
+            score1: clampedScore1,
+            score2: clampedScore2,
+            isFinished: s.isFinished !== undefined ? Boolean(s.isFinished) : setEval.isFinished,
+          },
+        });
+      } else {
+        await tx.matchSet.create({
+          data: {
+            matchId,
+            setNumber: Number(s.setNumber),
+            score1: clampedScore1,
+            score2: clampedScore2,
+            isFinished: s.isFinished !== undefined ? Boolean(s.isFinished) : setEval.isFinished,
+          },
+        });
+      }
     }
-  }
 
-  // Busca os sets atualizados no banco de dados
-  const updatedSets = await prisma.matchSet.findMany({
-    where: { matchId },
-    orderBy: { setNumber: "asc" },
-  });
+    // Busca os sets atualizados para avaliar o vencedor
+    const updatedSets = await tx.matchSet.findMany({
+      where: { matchId },
+      orderBy: { setNumber: "asc" },
+    });
 
-  const evaluation = evaluateMatchWinner(
-    updatedSets,
-    setsToWin,
-    pointsPerSet,
-    advantageRule
-  );
+    const evaluation = evaluateMatchWinner(updatedSets, setsToWin, pointsPerSet, advantageRule);
 
-  let newWinnerId: string | null = null;
-  let newStatus = match.status;
+    let newWinnerId: string | null = null;
+    let newStatus = match.status;
 
-  if (evaluation.isFinished && evaluation.winnerSlot) {
-    newWinnerId = evaluation.winnerSlot === 1 ? match.participant1Id : match.participant2Id;
-    newStatus = "FINISHED";
-  } else {
-    newWinnerId = null;
-    const hasAnyPoints = updatedSets.some((s) => s.score1 > 0 || s.score2 > 0);
-    newStatus = hasAnyPoints ? "IN_PROGRESS" : "SCHEDULED";
-  }
+    if (evaluation.isFinished && evaluation.winnerSlot) {
+      newWinnerId = evaluation.winnerSlot === 1 ? match.participant1Id : match.participant2Id;
+      newStatus = "FINISHED";
+    } else {
+      newWinnerId = null;
+      const hasAnyPoints = updatedSets.some((s) => s.score1 > 0 || s.score2 > 0);
+      newStatus = hasAnyPoints ? "IN_PROGRESS" : "SCHEDULED";
+    }
 
-  const previousWinnerId = match.winnerId;
+    const previousWinnerId = match.winnerId;
 
-  // Atualiza a partida no banco de dados
-  const updatedMatch = await prisma.match.update({
-    where: { id: matchId },
-    data: {
-      winnerId: newWinnerId,
-      status: newStatus,
-    },
-    include: {
-      participant1: true,
-      participant2: true,
-      winner: true,
-      sets: {
-        orderBy: { setNumber: "asc" },
-      },
-    },
-  });
+    // Atualiza a partida no banco de dados
+    await tx.match.update({
+      where: { id: matchId },
+      data: { winnerId: newWinnerId, status: newStatus },
+    });
 
-  // Avança ou limpa o vencedor na próxima partida (ex: final)
-  if (match.nextMatchId && match.nextMatchSlot) {
-    if (newWinnerId) {
-      // Define o novo vencedor na vaga (slot) apropriada da próxima partida
-      const slotData =
-        match.nextMatchSlot === 1
-          ? { participant1Id: newWinnerId }
-          : { participant2Id: newWinnerId };
-
-      await prisma.match.update({
-        where: { id: match.nextMatchId },
-        data: slotData,
-      });
-    } else if (previousWinnerId) {
-      // Se a partida não tem mais um vencedor, limpa a vaga se ela tinha o previousWinnerId
-      const nextMatch = await prisma.match.findUnique({
-        where: { id: match.nextMatchId },
-      });
-      if (nextMatch) {
-        if (match.nextMatchSlot === 1 && nextMatch.participant1Id === previousWinnerId) {
-          await prisma.match.update({
-            where: { id: match.nextMatchId },
-            data: { participant1Id: null },
-          });
-        } else if (match.nextMatchSlot === 2 && nextMatch.participant2Id === previousWinnerId) {
-          await prisma.match.update({
-            where: { id: match.nextMatchId },
-            data: { participant2Id: null },
-          });
+    // Avança ou limpa o vencedor na próxima partida (ex: final)
+    if (match.nextMatchId && match.nextMatchSlot) {
+      if (newWinnerId) {
+        const slotData =
+          match.nextMatchSlot === 1
+            ? { participant1Id: newWinnerId }
+            : { participant2Id: newWinnerId };
+        await tx.match.update({ where: { id: match.nextMatchId }, data: slotData });
+      } else if (previousWinnerId) {
+        const nextMatch = await tx.match.findUnique({ where: { id: match.nextMatchId } });
+        if (nextMatch) {
+          if (match.nextMatchSlot === 1 && nextMatch.participant1Id === previousWinnerId) {
+            await tx.match.update({ where: { id: match.nextMatchId }, data: { participant1Id: null } });
+          } else if (match.nextMatchSlot === 2 && nextMatch.participant2Id === previousWinnerId) {
+            await tx.match.update({ where: { id: match.nextMatchId }, data: { participant2Id: null } });
+          }
         }
       }
     }
-  }
 
-  // Atualiza o status do torneio se esta for a partida final
-  if (match.stage === "FINAL" || !match.nextMatchId) {
-    if (newWinnerId) {
-      await prisma.tournament.update({
+    // Atualiza o status do torneio se esta for a partida final
+    if (match.stage === "FINAL" || !match.nextMatchId) {
+      await tx.tournament.update({
         where: { id: match.tournamentId },
-        data: { status: "FINISHED" },
-      });
-    } else {
-      await prisma.tournament.update({
-        where: { id: match.tournamentId },
-        data: { status: "IN_PROGRESS" },
+        data: { status: newWinnerId ? "FINISHED" : "IN_PROGRESS" },
       });
     }
-  }
+  });
+
+  // Busca o estado final para retornar
+  const [updatedMatch, updatedSets] = await Promise.all([
+    prisma.match.findUniqueOrThrow({
+      where: { id: matchId },
+      include: {
+        participant1: true,
+        participant2: true,
+        winner: true,
+        sets: { orderBy: { setNumber: "asc" } },
+      },
+    }),
+    prisma.matchSet.findMany({ where: { matchId }, orderBy: { setNumber: "asc" } }),
+  ]);
+
+  const evaluation = evaluateMatchWinner(updatedSets, setsToWin, pointsPerSet, advantageRule);
 
   return {
     match: updatedMatch,
