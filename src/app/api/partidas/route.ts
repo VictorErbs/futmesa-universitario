@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { isAdmin } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
+    if (!(await isAdmin())) {
+      return NextResponse.json(
+        { error: "Apenas administradores podem criar partidas." },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const { tournamentId, participant1Id, participant2Id, court, stage } = body;
 

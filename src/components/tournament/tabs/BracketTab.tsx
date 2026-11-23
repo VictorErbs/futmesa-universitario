@@ -7,6 +7,7 @@ interface BracketTabProps {
   matches: MatchType[];
   pointsPerSet?: number;
   setsToWin?: number;
+  isAdmin?: boolean;
   onOpenScoreboard: (match: MatchType) => void;
   onMatchUpdated?: () => Promise<void> | void;
 }
@@ -15,6 +16,7 @@ export const BracketTab: React.FC<BracketTabProps> = ({
   matches,
   pointsPerSet = 18,
   setsToWin = 2,
+  isAdmin = false,
   onOpenScoreboard,
   onMatchUpdated,
 }) => {
@@ -31,6 +33,7 @@ export const BracketTab: React.FC<BracketTabProps> = ({
         matches={matches}
         pointsPerSet={pointsPerSet}
         setsToWin={setsToWin}
+        isAdmin={isAdmin}
         onOpenScoreboard={onOpenScoreboard}
         onMatchUpdated={onMatchUpdated}
       />

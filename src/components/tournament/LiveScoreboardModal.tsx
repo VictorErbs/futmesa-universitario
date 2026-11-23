@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { MatchType } from "@/types/tournament";
-import { getScoreState, isSetFinished, evaluateMatchWinner } from "@/lib/tournament-engine";
+import { getScoreState, isSetFinished, evaluateMatchWinner, getMaxPointsForTournament } from "@/lib/tournament-engine";
 import confetti from "canvas-confetti";
 import {
   X,
@@ -21,6 +21,7 @@ interface LiveScoreboardModalProps {
   match: MatchType;
   pointsPerSet?: number;
   maxSets?: number;
+  setsToWin?: number;
   isOpen: boolean;
   onClose: () => void;
   onMatchUpdated?: () => void;
@@ -31,11 +32,13 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
   match,
   pointsPerSet = 18,
   maxSets = 3,
+  setsToWin: propSetsToWin,
   isOpen,
   onClose,
   onMatchUpdated,
   isAdmin: propIsAdmin,
 }) => {
+  const setsToWin = propSetsToWin ?? Math.ceil(maxSets / 2);
   const { isAdmin: hookIsAdmin } = useAdmin();
   const isAdmin = propIsAdmin ?? hookIsAdmin;
   const { state, dispatch } = useScoreboardState(match, maxSets, pointsPerSet, isOpen);
@@ -64,7 +67,7 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
   const currentSet = sets[currentSetIndex] || { score1: 0, score2: 0, isFinished: false };
   const scoreState = getScoreState(currentSet.score1, currentSet.score2, pointsPerSet);
   const setEvaluation = isSetFinished(currentSet.score1, currentSet.score2, pointsPerSet);
-  const matchEvaluation = evaluateMatchWinner(sets, maxSets, pointsPerSet);
+  const matchEvaluation = evaluateMatchWinner(sets, setsToWin, pointsPerSet);
 
   const fireConfetti = () => {
     try {
@@ -81,50 +84,80 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
 
   const handleScoreChange = (side: 1 | 2, delta: number) => {
     if (!isAdmin) return;
-    dispatch({ type: "SCORE_CHANGE", side, delta, pointsPerSet, maxSets });
+    if (matchEvaluation.isFinished && delta > 0) return;
 
-    // Extrai os últimos pontos para sincronizar corretamente
-    const newScore1 = side === 1 ? Math.max(0, currentSet.score1 + delta) : currentSet.score1;
-    const newScore2 = side === 2 ? Math.max(0, currentSet.score2 + delta) : currentSet.score2;
-    
+    dispatch({ type: "SCORE_CHANGE", side, delta, pointsPerSet, setsToWin });
+
+    const maxPoints = getMaxPointsForTournament(pointsPerSet);
+    const newScore1 =
+      side === 1
+        ? Math.min(maxPoints, Math.max(0, currentSet.score1 + delta))
+        : currentSet.score1;
+    const newScore2 =
+      side === 2
+        ? Math.min(maxPoints, Math.max(0, currentSet.score2 + delta))
+        : currentSet.score2;
+
     // Salva o ponto ao vivo automaticamente em segundo plano
-    syncLiveScore(
-      side === 1 ? newScore1 : currentSet.score1,
-      side === 2 ? newScore2 : currentSet.score2
-    );
+    syncLiveScore(currentSetIndex + 1, newScore1, newScore2);
   };
 
   const handleUndo = () => {
-    if (!isAdmin) return;
+    if (!isAdmin || history.length === 0) return;
+    const last = history[history.length - 1];
+    const targetSet = sets[last.setIndex];
     dispatch({ type: "UNDO" });
+
+    if (targetSet) {
+      const revertedScore1 =
+        last.side === 1 ? Math.max(0, targetSet.score1 - last.delta) : targetSet.score1;
+      const revertedScore2 =
+        last.side === 2 ? Math.max(0, targetSet.score2 - last.delta) : targetSet.score2;
+      syncLiveScore(last.setIndex + 1, revertedScore1, revertedScore2);
+    }
   };
 
-  const handleFinishSet = () => {
+  const handleFinishSet = async () => {
     if (!isAdmin) return;
-    dispatch({ type: "FINISH_SET", maxSets, pointsPerSet });
-    
-    // Avalia se a partida terminou após o despacho
-    // Não conseguimos ver o novo estado aqui facilmente sem duplicar a lógica,
-    // então avaliamos o PRÓXIMO estado simulando o fim.
+    dispatch({ type: "FINISH_SET", maxSets, pointsPerSet, setsToWin });
+
     const nextSets = [...sets];
     if (nextSets[currentSetIndex]) {
       nextSets[currentSetIndex] = { ...nextSets[currentSetIndex], isFinished: true };
     }
-    const updatedEval = evaluateMatchWinner(nextSets, maxSets, pointsPerSet);
+    const updatedEval = evaluateMatchWinner(nextSets, setsToWin, pointsPerSet);
 
     if (updatedEval.isFinished) {
       fireConfetti();
     }
+
+    try {
+      const res = await fetch(`/api/partidas/${match.id}/resultado`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          setNumber: currentSetIndex + 1,
+          score1: currentSet.score1,
+          score2: currentSet.score2,
+          isFinished: true,
+        }),
+      });
+      if (res.ok && onMatchUpdated) {
+        onMatchUpdated();
+      }
+    } catch {
+      // ignora erro silencioso de rede
+    }
   };
 
   // Sincroniza com o banco de dados
-  const syncLiveScore = async (score1: number, score2: number) => {
+  const syncLiveScore = async (setNumber: number, score1: number, score2: number) => {
     try {
       const res = await fetch(`/api/partidas/${match.id}/live`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          setNumber: currentSetIndex + 1,
+          setNumber,
           score1,
           score2,
         }),
@@ -154,6 +187,7 @@ export const LiveScoreboardModal: React.FC<LiveScoreboardModalProps> = ({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          forceFinish: true,
           sets: sets.map((s, idx) => ({
             setNumber: idx + 1,
             score1: s.score1,

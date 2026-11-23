@@ -478,12 +478,25 @@ export function generateGroupsAndRoundRobin(
 }
 
 /**
+ * Embaralha um array usando o algoritmo Fisher-Yates (sem viés)
+ */
+export function shuffleArray<T>(items: T[]): T[] {
+  const arr = [...items];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/**
  * Calcula a tabela de classificação dos grupos com critérios de desempate
  */
 export function calculateGroupStandings(
   groupParticipants: (EngineParticipant | ParticipantType)[],
   groupMatches: (EngineMatch | MatchType | any)[],
-  pointsPerSet: number = 18
+  pointsPerSet: number = 18,
+  advantageRule: boolean = true
 ): StandingsResult[] {
   const standingsMap = new Map<string, StandingsResult>();
 
@@ -536,7 +549,12 @@ export function calculateGroupStandings(
         if (set.score1 > set.score2) p1Sets++;
         else if (set.score2 > set.score1) p2Sets++;
       } else {
-        const evalSet = evaluateSetWinner(set.score1 || 0, set.score2 || 0, 18, true);
+        const evalSet = evaluateSetWinner(
+          set.score1 || 0,
+          set.score2 || 0,
+          pointsPerSet,
+          advantageRule
+        );
         if (evalSet.isFinished) {
           if (evalSet.winner === 1) p1Sets++;
           else if (evalSet.winner === 2) p2Sets++;
@@ -603,7 +621,28 @@ export function qualifyTopTeamsToKnockout(
   setsToWin: number = 2,
   pointsPerSet: number = 18
 ): EngineMatch[] {
-  const groupNames = Object.keys(standingsByGroup);
+  const groupNames = Object.keys(standingsByGroup).sort();
+
+  if (groupNames.length === 1) {
+    const gA = standingsByGroup[groupNames[0]] || [];
+    if (gA.length < 2) return [];
+    return [
+      {
+        id: `playoff-final-${Date.now().toString(36)}`,
+        stage: "FINAL",
+        round: 1,
+        matchNumber: 1,
+        participant1Id: gA[0]?.participantId || null,
+        participant2Id: gA[1]?.participantId || null,
+        winnerId: null,
+        status: "SCHEDULED",
+        nextMatchId: null,
+        nextMatchSlot: null,
+        court: "Mesa Central",
+        sets: [],
+      },
+    ];
+  }
 
   if (groupNames.length === 2) {
     const gA = standingsByGroup[groupNames[0]];
@@ -655,6 +694,37 @@ export function qualifyTopTeamsToKnockout(
     };
 
     return [semi1, semi2, finalMatch];
+  }
+
+  if (groupNames.length >= 3) {
+    const firsts: EngineParticipant[] = [];
+    const seconds: EngineParticipant[] = [];
+
+    groupNames.forEach((name) => {
+      const rows = standingsByGroup[name] || [];
+      if (rows[0]) {
+        firsts.push({
+          id: rows[0].participantId,
+          name: rows[0].participantName,
+          partnerName: rows[0].partnerName,
+        });
+      }
+      if (rows[1]) {
+        seconds.push({
+          id: rows[1].participantId,
+          name: rows[1].participantName,
+          partnerName: rows[1].partnerName,
+        });
+      }
+    });
+
+    const qualified = [...firsts, ...seconds].map((p, idx) => ({
+      ...p,
+      seed: idx + 1,
+    }));
+
+    if (qualified.length < 2) return [];
+    return generateSingleEliminationBracket(qualified, setsToWin, pointsPerSet);
   }
 
   return [];

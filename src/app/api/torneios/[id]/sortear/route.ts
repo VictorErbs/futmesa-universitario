@@ -3,6 +3,7 @@ import prisma from "@/lib/db";
 import {
   generateSingleEliminationBracket,
   generateGroupsAndRoundRobin,
+  shuffleArray,
 } from "@/lib/tournament-engine";
 import { isAdmin } from "@/lib/auth";
 
@@ -49,159 +50,158 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Embaralha os participantes aleatoriamente para garantir um sorteio justo
-    const shuffled = [...participants].sort(() => Math.random() - 0.5);
-
-    // Apaga os dados anteriores de partidas, sets e grupos para uma nova geração limpa
-    await prisma.matchSet.deleteMany({
-      where: { match: { tournamentId: id } },
-    });
-    await prisma.match.deleteMany({
-      where: { tournamentId: id },
-    });
-    await prisma.tournamentGroup.deleteMany({
-      where: { tournamentId: id },
-    });
+    // Embaralha os participantes aleatoriamente (Fisher-Yates) para garantir um sorteio justo
+    const shuffled = shuffleArray(participants);
 
     // Define a quantidade de sets com base nas regras do torneio
     const setsCount = tournament.setsToWin === 1 ? 1 : 3;
 
-    if (tournament.format === "GROUPS_AND_KNOCKOUT" && participants.length >= 4) {
-      // Define o tamanho de cada grupo de acordo com o total de participantes
-      const groupSize = participants.length >= 8 ? 4 : 3;
-      
-      // Gera os grupos e as partidas da fase de grupos
-      const { groups, matches } = generateGroupsAndRoundRobin(
-        shuffled,
-        groupSize,
-        tournament.setsToWin,
-        tournament.pointsPerSet
-      );
+    await prisma.$transaction(async (tx) => {
+      // Apaga os dados anteriores de partidas, sets e grupos para uma nova geração limpa
+      await tx.matchSet.deleteMany({
+        where: { match: { tournamentId: id } },
+      });
+      await tx.match.deleteMany({
+        where: { tournamentId: id },
+      });
+      await tx.tournamentGroup.deleteMany({
+        where: { tournamentId: id },
+      });
+      await tx.participant.updateMany({
+        where: { tournamentId: id },
+        data: { groupName: null },
+      });
 
-      // Cria os grupos no banco de dados
-      for (const grp of groups) {
-        await prisma.tournamentGroup.create({
-          data: {
-            tournamentId: id,
-            name: grp.name,
-          },
-        });
+      if (tournament.format === "GROUPS_AND_KNOCKOUT" && participants.length >= 4) {
+        // Define o tamanho de cada grupo de acordo com o total de participantes
+        const groupSize = participants.length >= 8 ? 4 : 3;
 
-        // Atualiza o nome do grupo para cada participante
-        for (const p of grp.participants) {
-          await prisma.participant.update({
-            where: { id: p.id },
-            data: { groupName: grp.name },
-          });
-        }
-      }
+        // Gera os grupos e as partidas da fase de grupos
+        const { groups, matches } = generateGroupsAndRoundRobin(
+          shuffled,
+          groupSize,
+          tournament.setsToWin,
+          tournament.pointsPerSet
+        );
 
-      // Cria as partidas da fase de grupos
-      for (const m of matches) {
-        // Cria o registro da partida no banco de dados
-        const createdMatch = await prisma.match.create({
-          data: {
-            tournamentId: id,
-            stage: m.stage,
-            round: m.round,
-            matchNumber: m.matchNumber,
-            groupName: m.groupName,
-            participant1Id: m.participant1Id,
-            participant2Id: m.participant2Id,
-            status: "SCHEDULED",
-            court: m.court,
-          },
-        });
-
-        for (let s = 1; s <= setsCount; s++) {
-          await prisma.matchSet.create({
+        // Cria os grupos no banco de dados
+        for (const grp of groups) {
+          await tx.tournamentGroup.create({
             data: {
-              matchId: createdMatch.id,
-              setNumber: s,
-              score1: 0,
-              score2: 0,
-            },
-          });
-        }
-      }
-    } else {
-      // Formato SINGLE_ELIMINATION (Mata-Mata)
-      // Gera as chaves do formato mata-mata
-      const engineMatches = generateSingleEliminationBracket(
-        shuffled,
-        tournament.setsToWin,
-        tournament.pointsPerSet
-      );
-
-      // Mapeia os IDs gerados pelo motor para os IDs reais do banco de dados
-      const idMap = new Map<string, string>();
-
-      for (const em of engineMatches) {
-        // Cria a partida no banco de dados
-        const createdMatch = await prisma.match.create({
-          data: {
-            tournamentId: id,
-            stage: em.stage,
-            round: em.round,
-            matchNumber: em.matchNumber,
-            participant1Id: em.participant1Id,
-            participant2Id: em.participant2Id,
-            winnerId: em.winnerId,
-            status: em.status,
-            court: em.court,
-          },
-        });
-
-        idMap.set(em.id, createdMatch.id);
-
-        for (let s = 1; s <= setsCount; s++) {
-          await prisma.matchSet.create({
-            data: {
-              matchId: createdMatch.id,
-              setNumber: s,
-              score1: 0,
-              score2: 0,
-              isFinished: em.status === "FINISHED",
-            },
-          });
-        }
-      }
-
-      // Segunda etapa: vincula as próximas partidas e trata os avanços automáticos (BYE)
-      for (const em of engineMatches) {
-        // ID real da partida atual
-        const realMatchId = idMap.get(em.id);
-        // ID real da próxima partida
-        const realNextMatchId = em.nextMatchId ? idMap.get(em.nextMatchId) : null;
-
-        if (realMatchId && realNextMatchId) {
-          await prisma.match.update({
-            where: { id: realMatchId },
-            data: {
-              nextMatchId: realNextMatchId,
-              nextMatchSlot: em.nextMatchSlot,
+              tournamentId: id,
+              name: grp.name,
             },
           });
 
-          // Se for uma vitória por bye (automática), garante que a próxima partida tenha o participante
-          if (em.winnerId && em.nextMatchSlot) {
-            await prisma.match.update({
-              where: { id: realNextMatchId },
+          // Atualiza o nome do grupo para cada participante
+          for (const p of grp.participants) {
+            await tx.participant.update({
+              where: { id: p.id },
+              data: { groupName: grp.name },
+            });
+          }
+        }
+
+        // Cria as partidas da fase de grupos
+        for (const m of matches) {
+          const createdMatch = await tx.match.create({
+            data: {
+              tournamentId: id,
+              stage: m.stage,
+              round: m.round,
+              matchNumber: m.matchNumber,
+              groupName: m.groupName,
+              participant1Id: m.participant1Id,
+              participant2Id: m.participant2Id,
+              status: "SCHEDULED",
+              court: m.court,
+            },
+          });
+
+          for (let s = 1; s <= setsCount; s++) {
+            await tx.matchSet.create({
               data: {
-                ...(em.nextMatchSlot === 1
-                  ? { participant1Id: em.winnerId }
-                  : { participant2Id: em.winnerId }),
+                matchId: createdMatch.id,
+                setNumber: s,
+                score1: 0,
+                score2: 0,
               },
             });
           }
         }
-      }
-    }
+      } else {
+        // Formato SINGLE_ELIMINATION (Mata-Mata)
+        const engineMatches = generateSingleEliminationBracket(
+          shuffled,
+          tournament.setsToWin,
+          tournament.pointsPerSet
+        );
 
-    // Atualiza o status do torneio para em andamento
-    await prisma.tournament.update({
-      where: { id },
-      data: { status: "IN_PROGRESS" },
+        const idMap = new Map<string, string>();
+
+        for (const em of engineMatches) {
+          const createdMatch = await tx.match.create({
+            data: {
+              tournamentId: id,
+              stage: em.stage,
+              round: em.round,
+              matchNumber: em.matchNumber,
+              participant1Id: em.participant1Id,
+              participant2Id: em.participant2Id,
+              winnerId: em.winnerId,
+              status: em.status,
+              court: em.court,
+            },
+          });
+
+          idMap.set(em.id, createdMatch.id);
+
+          for (let s = 1; s <= setsCount; s++) {
+            await tx.matchSet.create({
+              data: {
+                matchId: createdMatch.id,
+                setNumber: s,
+                score1: 0,
+                score2: 0,
+                isFinished: em.status === "FINISHED",
+              },
+            });
+          }
+        }
+
+        // Segunda etapa: vincula as próximas partidas e trata os avanços automáticos (BYE)
+        for (const em of engineMatches) {
+          const realMatchId = idMap.get(em.id);
+          const realNextMatchId = em.nextMatchId ? idMap.get(em.nextMatchId) : null;
+
+          if (realMatchId && realNextMatchId) {
+            await tx.match.update({
+              where: { id: realMatchId },
+              data: {
+                nextMatchId: realNextMatchId,
+                nextMatchSlot: em.nextMatchSlot,
+              },
+            });
+
+            if (em.winnerId && em.nextMatchSlot) {
+              await tx.match.update({
+                where: { id: realNextMatchId },
+                data: {
+                  ...(em.nextMatchSlot === 1
+                    ? { participant1Id: em.winnerId }
+                    : { participant2Id: em.winnerId }),
+                },
+              });
+            }
+          }
+        }
+      }
+
+      // Atualiza o status do torneio para em andamento
+      await tx.tournament.update({
+        where: { id },
+        data: { status: "IN_PROGRESS" },
+      });
     });
 
     return NextResponse.json({

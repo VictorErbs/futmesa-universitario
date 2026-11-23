@@ -49,6 +49,7 @@ export default function TournamentHubPage({
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
   const [isDrawing, setIsDrawing] = useState(false);
+  const [isGeneratingPlayoffs, setIsGeneratingPlayoffs] = useState(false);
   const [drawSuccess, setDrawSuccess] = useState<string | null>(null);
 
   // Estado do placar ao vivo e do cartão social (modal)
@@ -133,6 +134,49 @@ export default function TournamentHubPage({
   const handleOpenScoreboard = (match: MatchType) => {
     setSelectedMatch(match);
     setIsScoreboardOpen(true);
+  };
+
+  // Função para excluir uma partida (admin)
+  const handleDeleteMatch = async (matchId: string) => {
+    if (!confirm("Deseja realmente excluir esta partida?")) return;
+    try {
+      const res = await fetch(`/api/partidas/${matchId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Erro ao excluir partida.");
+      }
+      await fetchTournamentData();
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  // Função para gerar o mata-mata a partir dos classificados dos grupos
+  const handleGeneratePlayoffs = async () => {
+    if (
+      !confirm(
+        "Gerar o chaveamento mata-mata com os 2 melhores de cada grupo? Partidas eliminatórias anteriores serão substituídas."
+      )
+    ) {
+      return;
+    }
+    setIsGeneratingPlayoffs(true);
+    setDrawSuccess(null);
+    setError(null);
+    try {
+      const res = await fetch(`/api/torneios/${tournamentId}/playoffs`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao gerar mata-mata.");
+      setDrawSuccess("Mata-mata gerado com os classificados dos grupos!");
+      await fetchTournamentData();
+      setActiveTab("bracket");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsGeneratingPlayoffs(false);
+    }
   };
 
   if (loading) {
@@ -413,7 +457,8 @@ export default function TournamentHubPage({
         <BracketTab
           matches={tournament.matches || []}
           pointsPerSet={tournament.pointsPerSet}
-          setsToWin={tournament.setsToWin}
+          setsToWin={setsToWinCount}
+          isAdmin={isAdmin}
           onOpenScoreboard={handleOpenScoreboard}
           onMatchUpdated={fetchTournamentData}
         />
@@ -424,6 +469,12 @@ export default function TournamentHubPage({
         <GroupsTab
           groups={tournament.groups || []}
           pointsPerSet={tournament.pointsPerSet}
+          isAdmin={isAdmin}
+          hasKnockoutMatches={(tournament.matches || []).some(
+            (m) => m.stage && m.stage !== "GROUPS"
+          )}
+          isGeneratingPlayoffs={isGeneratingPlayoffs}
+          onGeneratePlayoffs={handleGeneratePlayoffs}
         />
       )}
 
@@ -431,16 +482,30 @@ export default function TournamentHubPage({
       {activeTab === "matches" && (
         <MatchesTab
           matches={tournament.matches || []}
+          tournamentTitle={tournament.title}
+          isAdmin={isAdmin}
           onOpenScoreboard={handleOpenScoreboard}
+          onDeleteMatch={handleDeleteMatch}
         />
       )}
 
       {/* Conteúdo da Aba 5: Participantes */}
       {activeTab === "participants" && (
         <ParticipantsTab
-          participants={tournament.participants || []}
+          participants={filteredParticipants}
           participantsCount={participantsCount}
           tournamentId={tournamentId}
+          searchQuery={participantSearch}
+          onSearchChange={setParticipantSearch}
+          selectedBairro={selectedBairroFilter}
+          onBairroChange={setSelectedBairroFilter}
+          availableBairros={Array.from(
+            new Set(
+              (tournament.participants || [])
+                .map((p) => p.neighborhood)
+                .filter((b): b is string => Boolean(b))
+            )
+          )}
         />
       )}
 
@@ -450,6 +515,8 @@ export default function TournamentHubPage({
           match={selectedMatch}
           pointsPerSet={tournament.pointsPerSet}
           maxSets={maxSetsCount}
+          setsToWin={setsToWinCount}
+          isAdmin={isAdmin}
           isOpen={isScoreboardOpen}
           onClose={() => {
             setIsScoreboardOpen(false);

@@ -20,7 +20,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
     const { id } = await params;
     const body = await req.json();
-    const { sets, setNumber, score1, score2, isFinished } = body;
+    const { sets, setNumber, score1, score2, isFinished, forceFinish } = body;
 
     let setsInput: SetScoreInput[] = [];
 
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const result = await updateMatchScoreAndAdvance(id, setsInput);
+    const result = await updateMatchScoreAndAdvance(id, setsInput, Boolean(forceFinish));
 
     return NextResponse.json({
       success: true,

@@ -23,10 +23,10 @@ export interface ScoreboardState {
 
 export type ScoreboardAction =
   | { type: "INIT"; match: MatchType; maxSets: number }
-  | { type: "SCORE_CHANGE"; side: 1 | 2; delta: number; pointsPerSet: number; maxSets: number }
+  | { type: "SCORE_CHANGE"; side: 1 | 2; delta: number; pointsPerSet: number; setsToWin: number }
   | { type: "UNDO" }
   | { type: "TOGGLE_SWAP" }
-  | { type: "FINISH_SET"; maxSets: number; pointsPerSet: number }
+  | { type: "FINISH_SET"; maxSets: number; pointsPerSet: number; setsToWin: number }
   | { type: "SET_CURRENT_SET"; index: number };
 
 function initScoreboardState(match: MatchType, maxSets: number): ScoreboardState {
@@ -58,9 +58,9 @@ function scoreboardReducer(state: ScoreboardState, action: ScoreboardAction): Sc
     case "INIT":
       return initScoreboardState(action.match, action.maxSets);
     case "SCORE_CHANGE": {
-      const { side, delta, pointsPerSet, maxSets } = action;
-      
-      const matchEvaluation = evaluateMatchWinner(state.sets, maxSets, pointsPerSet);
+      const { side, delta, pointsPerSet, setsToWin } = action;
+
+      const matchEvaluation = evaluateMatchWinner(state.sets, setsToWin, pointsPerSet);
       if (matchEvaluation.isFinished && delta > 0) return state;
 
       const nextSets = [...state.sets];
@@ -121,7 +121,7 @@ function scoreboardReducer(state: ScoreboardState, action: ScoreboardAction): Sc
         isFinished: true,
       };
       
-      const updatedEval = evaluateMatchWinner(nextSets, action.maxSets, action.pointsPerSet);
+      const updatedEval = evaluateMatchWinner(nextSets, action.setsToWin, action.pointsPerSet);
       let nextIndex = state.currentSetIndex;
       
       if (!updatedEval.isFinished && state.currentSetIndex + 1 < action.maxSets) {

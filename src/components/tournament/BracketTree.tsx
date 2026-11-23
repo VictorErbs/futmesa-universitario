@@ -10,6 +10,7 @@ interface BracketTreeProps {
   matches: MatchType[];
   pointsPerSet?: number;
   setsToWin?: number;
+  isAdmin?: boolean;
   onOpenScoreboard?: (match: MatchType) => void;
   onMatchUpdated?: () => Promise<void> | void;
 }
@@ -18,10 +19,12 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
   matches,
   pointsPerSet = 18,
   setsToWin = 2,
+  isAdmin = false,
   onOpenScoreboard,
   onMatchUpdated,
 }) => {
   const [updatingMatchId, setUpdatingMatchId] = useState<string | null>(null);
+  const [scoreError, setScoreError] = useState<string | null>(null);
   const maxPoints = getMaxPointsForTournament(pointsPerSet);
 
   const handleDirectScoreChange = async (
@@ -30,7 +33,9 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
     newScore1: number,
     newScore2: number
   ) => {
+    if (!isAdmin) return;
     try {
+      setScoreError(null);
       setUpdatingMatchId(match.id);
       const res = await fetch(`/api/partidas/${match.id}/resultado`, {
         method: "POST",
@@ -48,10 +53,10 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
         }
       } else {
         const err = await res.json();
-        console.error("Erro ao atualizar placar no banco:", err);
+        setScoreError(err.error || "Erro ao atualizar placar.");
       }
     } catch (error) {
-      console.error("Falha ao atualizar placar:", error);
+      setScoreError("Falha de conexão ao atualizar placar.");
     } finally {
       setUpdatingMatchId(null);
     }
@@ -123,7 +128,9 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-amber-400 shrink-0" />
           <span>
-            Selecione a pontuação diretamente nos cards para atualizar na hora e avançar o vencedor para a final.
+            {isAdmin
+              ? "Selecione a pontuação diretamente nos cards para atualizar na hora e avançar o vencedor para a final."
+              : "Acompanhe o chaveamento ao vivo. Clique em uma partida para ver o placar detalhado."}
           </span>
         </div>
         <div className="flex items-center gap-2 shrink-0 font-mono">
@@ -132,6 +139,12 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
           </span>
         </div>
       </div>
+
+      {scoreError && (
+        <div className="rounded-xl border border-red-500/40 bg-red-950/40 px-4 py-2.5 text-xs font-semibold text-red-300">
+          {scoreError}
+        </div>
+      )}
 
       {/* Contêiner da Árvore de Chaveamento Horizontal */}
       <div className="w-full overflow-x-auto pb-8 pt-2">
@@ -276,7 +289,7 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
 
                           {/* Pontos por set */}
                           <div className="flex items-center gap-1.5 font-mono font-bold shrink-0">
-                            {p1 && p2 && !isBye ? (
+                            {isAdmin && p1 && p2 && !isBye ? (
                               displaySets.map((s, idx) => {
                                 const isLeading = s.score1 > s.score2;
                                 const currentSetNum = s.setNumber || idx + 1;
@@ -353,7 +366,7 @@ export const BracketTree: React.FC<BracketTreeProps> = ({
 
                           {/* Pontos por set */}
                           <div className="flex items-center gap-1.5 font-mono font-bold shrink-0">
-                            {p1 && p2 && !isBye ? (
+                            {isAdmin && p1 && p2 && !isBye ? (
                               displaySets.map((s, idx) => {
                                 const isLeading = s.score2 > s.score1;
                                 const currentSetNum = s.setNumber || idx + 1;

@@ -72,6 +72,10 @@ export async function POST(req: NextRequest) {
     const calculatedSetsToWin =
       setsToWin !== undefined ? Number(setsToWin) : Number(maxSets) === 1 ? 1 : 2;
 
+    // Valida data de início
+    const parsedStartDate = startDate ? new Date(startDate) : new Date();
+    const validStartDate = isNaN(parsedStartDate.getTime()) ? new Date() : parsedStartDate;
+
     // Cria o novo torneio no banco de dados
     const tournament = await prisma.tournament.create({
       data: {
@@ -83,7 +87,10 @@ export async function POST(req: NextRequest) {
         setsToWin: calculatedSetsToWin,
         advantageRule: Boolean(advantageRule),
         location: location?.trim() || "Quadra Universitária de MesaMatch",
-        startDate: startDate ? new Date(startDate) : new Date(),
+        community: community?.trim() || null,
+        sponsors: sponsors?.trim() || null,
+        rulesNote: rulesNote?.trim() || null,
+        startDate: validStartDate,
         status: "REGISTRATION",
       },
     });

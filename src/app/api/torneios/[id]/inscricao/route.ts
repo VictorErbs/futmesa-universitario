@@ -13,7 +13,16 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     // Extrai o corpo da requisição JSON
     const body = await req.json();
     // Obtém os dados do participante
-    const { name, nickname, neighborhood, communityOrProject, phone } = body;
+    const {
+      name,
+      nickname,
+      partnerName,
+      partnerNickname,
+      neighborhood,
+      communityOrProject,
+      phone,
+      email,
+    } = body;
 
     if (!name || name.trim() === "") {
       return NextResponse.json(
@@ -49,12 +58,15 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
     // Cria o novo participante no banco de dados
     const participant = await prisma.participant.create({
-      data: { 
+      data: {
         name: name.trim(),
         nickname: nickname?.trim() || null,
+        partnerName: partnerName?.trim() || null,
+        partnerNickname: partnerNickname?.trim() || null,
         neighborhood: neighborhood?.trim() || null,
         communityOrProject: communityOrProject?.trim() || null,
         phone: phone?.trim() || null,
+        email: email?.trim() || null,
         seed: currentCount + 1,
         tournamentId: id,
       },

@@ -18,7 +18,8 @@ export interface SetScoreInput {
  */
 export async function updateMatchScoreAndAdvance(
   matchId: string,
-  setsInput: SetScoreInput[]
+  setsInput: SetScoreInput[],
+  forceFinish: boolean = false
 ) {
   const match = await prisma.match.findUnique({
     where: { id: matchId },
@@ -86,6 +87,25 @@ export async function updateMatchScoreAndAdvance(
     if (evaluation.isFinished && evaluation.winnerSlot) {
       newWinnerId = evaluation.winnerSlot === 1 ? match.participant1Id : match.participant2Id;
       newStatus = "FINISHED";
+    } else if (forceFinish) {
+      let winnerSlot: 1 | 2 | null = null;
+      if (evaluation.setsWon1 > evaluation.setsWon2) {
+        winnerSlot = 1;
+      } else if (evaluation.setsWon2 > evaluation.setsWon1) {
+        winnerSlot = 2;
+      } else {
+        const total1 = updatedSets.reduce((acc, s) => acc + s.score1, 0);
+        const total2 = updatedSets.reduce((acc, s) => acc + s.score2, 0);
+        if (total1 > total2) winnerSlot = 1;
+        else if (total2 > total1) winnerSlot = 2;
+      }
+      newWinnerId =
+        winnerSlot === 1
+          ? match.participant1Id
+          : winnerSlot === 2
+          ? match.participant2Id
+          : null;
+      newStatus = "FINISHED";
     } else {
       newWinnerId = null;
       const hasAnyPoints = updatedSets.some((s) => s.score1 > 0 || s.score2 > 0);
@@ -120,8 +140,8 @@ export async function updateMatchScoreAndAdvance(
       }
     }
 
-    // Atualiza o status do torneio se esta for a partida final
-    if (match.stage === "FINAL" || !match.nextMatchId) {
+    // Atualiza o status do torneio apenas se esta for a partida FINAL
+    if (match.stage === "FINAL") {
       await tx.tournament.update({
         where: { id: match.tournamentId },
         data: { status: newWinnerId ? "FINISHED" : "IN_PROGRESS" },

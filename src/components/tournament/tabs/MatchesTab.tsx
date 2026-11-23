@@ -5,12 +5,18 @@ import { MatchType } from "@/types/tournament";
 
 interface MatchesTabProps {
   matches: MatchType[];
+  tournamentTitle?: string;
+  isAdmin?: boolean;
   onOpenScoreboard: (match: MatchType) => void;
+  onDeleteMatch?: (id: string) => void;
 }
 
 export const MatchesTab: React.FC<MatchesTabProps> = ({
   matches,
+  tournamentTitle,
+  isAdmin = false,
   onOpenScoreboard,
+  onDeleteMatch,
 }) => {
   return (
     <div className="space-y-6">
@@ -32,7 +38,10 @@ export const MatchesTab: React.FC<MatchesTabProps> = ({
             <MatchCard
               key={match.id}
               match={match}
+              tournamentTitle={tournamentTitle}
+              isAdmin={isAdmin}
               onOpenScoreboard={onOpenScoreboard}
+              onDeleteMatch={onDeleteMatch}
             />
           ))}
         </div>

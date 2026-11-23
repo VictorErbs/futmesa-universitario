@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { isAdmin } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -77,6 +78,13 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 // Rota PUT para atualizar os detalhes do torneio
 export async function PUT(req: NextRequest, { params }: RouteParams) {
   try {
+    if (!(await isAdmin())) {
+      return NextResponse.json(
+        { error: "Apenas administradores podem editar o torneio." },
+        { status: 403 }
+      );
+    }
+
     // Obtém o ID do torneio a partir dos parâmetros
     const { id } = await params;
     // Extrai o corpo da requisição JSON
@@ -89,11 +97,31 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
       pointsPerSet,
       setsToWin,
       maxSets,
+      advantageRule,
       location,
+      community,
+      sponsors,
+      rulesNote,
       startDate,
       modality,
       format,
     } = body;
+
+    let parsedStartDate: Date | null | undefined = undefined;
+    if (startDate !== undefined) {
+      if (startDate === null || startDate === "") {
+        parsedStartDate = null;
+      } else {
+        const d = new Date(startDate);
+        if (isNaN(d.getTime())) {
+          return NextResponse.json(
+            { error: "Data de início inválida." },
+            { status: 400 }
+          );
+        }
+        parsedStartDate = d;
+      }
+    }
 
     // Atualiza os dados do torneio no banco de dados
     const updated = await prisma.tournament.update({
@@ -105,8 +133,12 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
         ...(pointsPerSet !== undefined && { pointsPerSet: Number(pointsPerSet) }),
         ...(setsToWin !== undefined && { setsToWin: Number(setsToWin) }),
         ...(maxSets !== undefined && { setsToWin: Number(maxSets) === 1 ? 1 : 2 }),
-        ...(location !== undefined && { location: location?.trim() }),
-        ...(startDate !== undefined && { startDate: new Date(startDate) }),
+        ...(advantageRule !== undefined && { advantageRule: Boolean(advantageRule) }),
+        ...(location !== undefined && { location: location?.trim() || null }),
+        ...(community !== undefined && { community: community?.trim() || null }),
+        ...(sponsors !== undefined && { sponsors: sponsors?.trim() || null }),
+        ...(rulesNote !== undefined && { rulesNote: rulesNote?.trim() || null }),
+        ...(parsedStartDate !== undefined && { startDate: parsedStartDate }),
         ...(modality !== undefined && { modality }),
         ...(format !== undefined && { format }),
       },
@@ -125,6 +157,13 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
 // Rota DELETE para excluir o torneio
 export async function DELETE(req: NextRequest, { params }: RouteParams) {
   try {
+    if (!(await isAdmin())) {
+      return NextResponse.json(
+        { error: "Apenas administradores podem excluir o torneio." },
+        { status: 403 }
+      );
+    }
+
     // Obtém o ID do torneio a partir dos parâmetros
     const { id } = await params;
 

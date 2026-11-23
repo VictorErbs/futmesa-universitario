@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, use } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import confetti from "canvas-confetti";
 import {
@@ -36,7 +35,6 @@ export default function InscricaoPublicaPage({
 }) {
   const resolvedParams = use(params);
   const tournamentId = resolvedParams.id;
-  const router = useRouter();
 
   const [tournament, setTournament] = useState<TournamentType | null>(null);
   const [loadingTournament, setLoadingTournament] = useState(true);
@@ -153,6 +151,12 @@ export default function InscricaoPublicaPage({
     tournament?.modality === "DUPLAS" ||
     tournament?.modality === "DOUBLES" ||
     tournament?.modality === "2x2";
+
+  const isRegistrationClosed =
+    tournament?.status === "FINISHED" ||
+    tournament?.status === "FINALIZADO" ||
+    tournament?.status === "CANCELLED" ||
+    tournament?.status === "CANCELADO";
 
   // URL base do torneio para facilitar o compartilhamento
   const hubUrl = typeof window !== "undefined" ? `${window.location.origin}/torneios/${tournamentId}` : "";
@@ -291,8 +295,27 @@ export default function InscricaoPublicaPage({
           </div>
         )}
 
+        {/* Aviso de Inscrições Encerradas */}
+        {isRegistrationClosed && step === "FORM" && (
+          <div className="py-8 text-center space-y-4">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40">
+              <AlertCircle className="h-7 w-7" />
+            </div>
+            <h2 className="text-xl font-black text-white">Inscrições Encerradas</h2>
+            <p className="text-sm text-emerald-100/75">
+              Este campeonato já foi finalizado ou cancelado e não aceita novas inscrições.
+            </p>
+            <Link
+              href={`/torneios/${tournamentId}`}
+              className="inline-flex items-center justify-center rounded-xl bg-amber-500 px-6 py-3 text-sm font-bold text-collegiate-dark hover:bg-amber-400 transition-all"
+            >
+              Ver Resultados do Torneio
+            </Link>
+          </div>
+        )}
+
         {/* ETAPA 1: Formulário de Inscrição */}
-        {step === "FORM" && (
+        {step === "FORM" && !isRegistrationClosed && (
           <form onSubmit={handleStartRegistration} className="space-y-4">
             {error && (
               <div className="flex items-center gap-2.5 rounded-xl border border-red-500/30 bg-red-950/40 p-3.5 text-xs text-red-300">
